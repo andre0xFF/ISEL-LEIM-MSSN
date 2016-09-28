@@ -9,28 +9,28 @@ import (
 
 func main() {
 
-  // Initial value
+	// Initial value
 	var x float64 = 2.5
-  // 7 digit accuracy
-  var tolerance float64 = 10^(-5)
-  // Don't want to divide by a number smaller than this
-  var epsilon float64 = 10^(-14)
-  // Don't allow the iterations to continue indefinitely
-  var maxIterations int = 20
+	// 7 digit accuracy
+	var tolerance float64 = 10 ^ (-5)
+	// Don't want to divide by a number smaller than this
+	var epsilon float64 = 10 ^ (-14)
+	// Don't allow the iterations to continue indefinitely
+	var maxIterations int = 20
 
 	for iteration := 0; iteration < maxIterations; iteration++ {
 
-    if math.Abs(fd(x)) < epsilon {
-      // dominator is too small
-      break
-    }
+		if math.Abs(fd(x)) < epsilon {
+			// dominator is too small
+			break
+		}
 
-    // Newton's computation
+		// Newton's computation
 		xnn := xnn(x)
 
 		fmt.Printf("X(n+%d) = %.5f\n", iteration, x)
 
-		if math.Abs(xnn - x) <= tolerance * math.Abs(xnn) {
+		if math.Abs(xnn-x) <= tolerance*math.Abs(xnn) {
 			// result converged and is within the desired tolerance
 			break
 		}
@@ -55,7 +55,7 @@ func fd(x float64) float64 {
 }
 
 // Simplified way
-func simplified()  {
+func simplified() {
 
 	// Initial value
 	var x float64 = 2.5
