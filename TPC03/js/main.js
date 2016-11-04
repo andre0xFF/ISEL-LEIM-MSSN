@@ -62,16 +62,6 @@ function draw() {
 	skydiver_04 = ex_03(skydiver_04)
 	skydiver_05 = ex_04(skydiver_05)
 
-	if (
-		(skydiver_01.position.y - skydiver_01.diameter / 2) === 0 &&
-		(skydiver_02.position.y - skydiver_02.diameter / 2) === 0 &&
-		(skydiver_03.position.y - skydiver_03.diameter / 2) === 0 &&
-		(skydiver_04.position.y - skydiver_04.diameter / 2) === 0 &&
-		(skydiver_05.position.y - skydiver_05.diameter / 2) === 0
-	) {
-		engine.pause = true
-	}
-
 	pop()
 
 	verbose()
@@ -90,21 +80,19 @@ function verbose() {
 	}
 	var y = 40
 
-	var time_string = `Total time ${(engine.time).toFixed(2)} [ s ]`
-
-	s = skydiver_01.verbose() + time_string
+	s = skydiver_01.verbose()
 	text(s, x(1), y)
 
-	s = skydiver_02.verbose() + time_string
+	s = skydiver_02.verbose()
 	text(s, x(2), y)
 
-	s = skydiver_03.verbose() + time_string
+	s = skydiver_03.verbose()
 	text(s, x(3), y)
 
-	s = skydiver_04.verbose() + time_string
+	s = skydiver_04.verbose()
 	text(s, x(4), y)
 
-	s = skydiver_05.verbose() + time_string
+	s = skydiver_05.verbose()
 	text(s, x(5), y)
 }
 
@@ -133,7 +121,7 @@ function ex_02(skydiver) {
 	return ex_01_02(skydiver)
 
 	// skydiver.draw(height)
-	// 
+	//
 	// skydiver = engine.apply_force(skydiver, GRAVITY)
 	//
 	// var area = (skydiver.diameter / 2) * Math.PI
@@ -161,5 +149,5 @@ function ex_03(skydiver) {
 
 function ex_04(skydiver) {
 
-	return ex_01_02(skydiver)
+	return ex_01_01(skydiver)
 }
