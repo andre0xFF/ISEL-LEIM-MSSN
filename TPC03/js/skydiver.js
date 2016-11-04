@@ -1,5 +1,6 @@
 var Skydiver = function(position, velocity, acceleration) {
 
+	this.initial_height = position.y
 	this.position = position
 	this.velocity = velocity
 	this.acceleration = acceleration
@@ -7,14 +8,15 @@ var Skydiver = function(position, velocity, acceleration) {
 	this.mass = 1
 }
 
-Skydiver.prototype.draw = function() {
+Skydiver.prototype.draw = function(canvas_height) {
 
-	ellipse(this.position.x, this.position.y * -1, this.diameter, this.diameter)
+	var y = map(this.position.y, 0, this.initial_height, 0, canvas_height)
+	ellipse(this.position.x, y * -1, this.diameter, this.diameter)
 }
 
 /**
  * Calculates the new position based on the current acceleration and velocity
- * based on real world forces
+ * based on Newton's laws
  * Input:
  * 	delta << Time difference between frames
  */

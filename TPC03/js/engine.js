@@ -1,6 +1,10 @@
 var Engine = function() {
 
 	GRAVITY = createVector(0, -9.81)
+	FRICTION = {
+		coefficient: 1,
+		density: 1.29
+	}
 
 	this.initial_time = 0
 	this.time = 0
