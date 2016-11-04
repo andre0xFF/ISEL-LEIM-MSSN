@@ -1,6 +1,5 @@
-var GRAVITY
-var INITIAL_HEIGHT = 1000
-var VERBOSE = true
+var INITIAL_HEIGHT
+var VERBOSE
 
 var frames = {
 
@@ -9,21 +8,18 @@ var frames = {
 	delta: 0
 }
 
-var engine = {
-
-	initial_time: 0,
-	time: 0,
-	pause: false
-}
-
+var engine
 var skydiver
 
 function setup() {
 
-	createCanvas(400, 100)
-	GRAVITY = createVector(0, -9.81)
-	skydiver_01 = new Skydiver(createVector(width * 1 / 4, 0), createVector(0, 0), createVector(0, 0))
+	INITIAL_HEIGHT = 1000
+	VERBOSE = true
 
+	createCanvas(400, INITIAL_HEIGHT)
+
+	engine = new Engine()
+	skydiver = new Skydiver(createVector(width * 1 / 2, INITIAL_HEIGHT), createVector(0, 0), createVector(0, 0))
 }
 
 function draw() {
@@ -37,9 +33,30 @@ function draw() {
 	frames.previous = frames.current
 	engine.time = (frames.current - engine.initial_time) / 1000
 
-	background('#626770')
+	background('#2c7058')
+
+	push()
+
+	// translate the axis
+	translate(0, INITIAL_HEIGHT)
 
 	// update object
 	skydiver.draw()
 
+	// calculate forces
+	skydiver = engine.apply_force(skydiver, GRAVITY)
+
+	// simulate movement
+	skydiver = engine.simulate(skydiver, frames.delta)
+
+	pop()
+
+	if (!VERBOSE) {
+		return
+	}
+
+	textSize(10)
+	s = skydiver.verbose() + `Total time ${(engine.time).toFixed(2)} [ s ]`
+	text(s, 1, 20)
+	console.log(s + '\n*************************')
 }

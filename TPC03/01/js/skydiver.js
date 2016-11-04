@@ -4,6 +4,7 @@ var Skydiver = function(position, velocity, acceleration) {
 	this.velocity = velocity
 	this.acceleration = acceleration
 	this.diameter = 20
+	this.mass = 1
 }
 
 Skydiver.prototype.draw = function() {
