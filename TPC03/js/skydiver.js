@@ -4,7 +4,7 @@ var Skydiver = function(position, velocity, acceleration) {
 	this.position = position;
 	this.velocity = velocity;
 	this.acceleration = acceleration;
-	this.diameter = 20;
+	this.diameter = 2;
 	this.mass = 1;
 	this.flight_time = millis();
 }
@@ -12,7 +12,7 @@ var Skydiver = function(position, velocity, acceleration) {
 Skydiver.prototype.draw = function(canvas_height) {
 
 	var y = map(this.position.y, 0, this.initial_height, 0, canvas_height);
-	ellipse(this.position.x, y * -1, this.diameter, this.diameter);
+	ellipse(this.position.x, y * -1, this.diameter * 10, this.diameter * 10);
 
 	if (this.position.y - this.diameter / 2 > 0) {
 		this.flight_time = (millis() - this.flight_time) / 1000;
