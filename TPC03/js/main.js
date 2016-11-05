@@ -9,17 +9,14 @@ var frames = {
 };
 
 var engine;
-// Free falling
-var skydiver_01;
-// Free falling euler
-var skydiver_02;
-// Free falling with friction
-var skydiver_03;
-// Free falling with friction and parachute
-var skydiver_04;
-// Free falling and diving in the water
-var skydiver_05;
 
+/**
+ * 00 << Free falling
+ * 01 << Free falling euler
+ * 02 << Free falling with friction
+ * 03 << Free falling with friction and parachute
+ * 04 << Free falling and diving in the water
+ */
 var skydivers = [];
 
 function setup() {
@@ -30,13 +27,12 @@ function setup() {
 	createCanvas(800, 850);
 
 	engine = new Engine();
-	skydiver_01 = new Skydiver(createVector(((width - 100) / 5) * 1, INITIAL_HEIGHT), createVector(0, 0), createVector(0, 0));
-	skydiver_02 = new Skydiver(createVector(((width - 100) / 5) * 2, INITIAL_HEIGHT), createVector(0, 0), createVector(0, 0));
-	skydiver_03 = new Skydiver(createVector(((width - 100) / 5) * 3, INITIAL_HEIGHT), createVector(0, 0), createVector(0, 0));
-	skydiver_04 = new Skydiver(createVector(((width - 100) / 5) * 4, INITIAL_HEIGHT), createVector(0, 0), createVector(0, 0));
-	skydiver_05 = new Skydiver(createVector(((width - 100) / 5) * 5, INITIAL_HEIGHT), createVector(0, 0), createVector(0, 0));
 
-	skydiver_03.mass = 80;
+	for (var i = 0; i < 5; i++) {
+		skydivers[i] = new Skydiver(createVector(((width - 100) / 5) * (i + 1), INITIAL_HEIGHT), createVector(0, 0), createVector(0, 0));
+	}
+
+	skydivers[2].mass = 80;
 };
 
 function draw() {
@@ -57,11 +53,11 @@ function draw() {
 	// translate the axis
 	translate(0, height);
 
-	skydiver_01 = ex_01_01(skydiver_01);
-	skydiver_02 = ex_01_02(skydiver_02);
-	skydiver_03 = ex_02(skydiver_03);
-	skydiver_04 = ex_03(skydiver_04);
-	skydiver_05 = ex_04(skydiver_05);
+	skydivers[0] = ex_01_01(skydivers[0]);
+	skydivers[1] = ex_01_02(skydivers[1]);
+	skydivers[2] = ex_02(skydivers[2]);
+	skydivers[3] = ex_03(skydivers[3]);
+	skydivers[4] = ex_04(skydivers[4]);
 
 	pop();
 
@@ -81,20 +77,10 @@ function verbose() {
 	}
 	var y = 40;
 
-	s = skydiver_01.verbose();
-	text(s, x(1), y);
-
-	s = skydiver_02.verbose();
-	text(s, x(2), y);
-
-	s = skydiver_03.verbose();
-	text(s, x(3), y);
-
-	s = skydiver_04.verbose();
-	text(s, x(4), y);
-
-	s = skydiver_05.verbose();
-	text(s, x(5), y);
+	for (var i = 0; i < skydivers.length; i++) {
+		s = skydivers[i].verbose();
+		text(s, x(i + 1), y)
+	}
 };
 
 function ex_01_01(skydiver) {
@@ -120,7 +106,6 @@ function ex_01_02(skydiver) {
 function ex_02(skydiver) {
 
 	skydiver.draw(height);
-
 
 	var area = (skydiver.diameter / 2) * Math.PI;
 	var fa = skydiver.velocity.copy();
