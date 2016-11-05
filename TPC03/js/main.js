@@ -62,6 +62,17 @@ function draw() {
 	pop();
 
 	verbose();
+
+	var x = function(n) {
+		return ((width - 100) / 5) * n - ((width - 100) / 5) / 2;
+	}
+	var y = 150;
+
+	text('Falling', x(1), y);
+	text('Falling (Euler)', x(2), y);
+	text('Friction', x(3), y);
+	text('Parachuting', x(4), y);
+	text('Water diving', x(5), y);
 };
 
 function verbose() {
@@ -123,6 +134,12 @@ function ex_02(skydiver) {
 };
 
 function ex_03(skydiver) {
+
+	if (skydiver.position.y > 300) {
+		return skydiver;
+	}
+
+	skydiver.diameter = 6;
 
 	return ex_01_02(skydiver);
 };
