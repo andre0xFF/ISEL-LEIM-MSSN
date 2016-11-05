@@ -43,6 +43,7 @@ Skydiver.prototype.verbose = function() {
 	return (
 		`Position ${this.position.x.toFixed(0)}, ${this.position.y.toFixed(0)} [ m ]\n` +
 		`Velocity ${this.velocity.x.toFixed(0)}, ${this.velocity.y.toFixed(0) * -1} [ m/s ]\n` +
-		`Flight time ${this.flight_time.toFixed(2)} [ s ]\n`
+		`Flight time ${this.flight_time.toFixed(2)} [ s ]\n` +
+		`Mass ${this.mass} [ kg ]\n`
 	);
 }

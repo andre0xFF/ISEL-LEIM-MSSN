@@ -20,7 +20,7 @@ var skydiver_04;
 // Free falling and diving in the water
 var skydiver_05;
 
-var skydivers = []
+var skydivers = [];
 
 function setup() {
 
@@ -36,9 +36,8 @@ function setup() {
 	skydiver_04 = new Skydiver(createVector(((width - 100) / 5) * 4, INITIAL_HEIGHT), createVector(0, 0), createVector(0, 0));
 	skydiver_05 = new Skydiver(createVector(((width - 100) / 5) * 5, INITIAL_HEIGHT), createVector(0, 0), createVector(0, 0));
 
-	// skydiver_03.mass = 80
-	// skydiver_04.mass = 80
-}
+	skydiver_03.mass = 80;
+};
 
 function draw() {
 
@@ -67,7 +66,7 @@ function draw() {
 	pop();
 
 	verbose();
-}
+};
 
 function verbose() {
 
@@ -96,60 +95,54 @@ function verbose() {
 
 	s = skydiver_05.verbose();
 	text(s, x(5), y);
-}
+};
 
 function ex_01_01(skydiver) {
 	// update object
 	skydiver.draw(height);
 	// calculate forces
-	skydiver = engine.apply_force(skydiver, GRAVITY);
+	skydiver = engine.apply_force(skydiver, GRAVITY.copy());
 	// simulate movement
 	skydiver = engine.simulate(skydiver, frames.delta);
 
 	return skydiver;
-}
+};
 
 function ex_01_02(skydiver) {
 
 	skydiver.draw(height);
-	skydiver = engine.apply_force(skydiver, GRAVITY);
+	skydiver = engine.apply_force(skydiver, GRAVITY.copy());
 	skydiver = engine.euler(skydiver, engine.time);
 
 	return skydiver;
-}
+};
 
 function ex_02(skydiver) {
 
-	return ex_01_02(skydiver);
+	skydiver.draw(height);
 
-	// skydiver.draw(height)
-	//
-	// skydiver = engine.apply_force(skydiver, GRAVITY)
-	//
-	// var area = (skydiver.diameter / 2) * Math.PI
-	// var abs_velocity = createVector(Math.abs(skydiver.velocity.x), Math.abs(skydiver.velocity.y))
-	// var p = skydiver.acceleration.copy()
-	// p.mult(skydiver.mass)
-	// var fa = skydiver.velocity.copy()
-	// fa.mult(abs_velocity)
-	// fa.mult(area)
-	// fa.mult(FRICTION.density)
-	// fa.mult(FRICTION.coefficient)
-	// fa.mult(-0.5)
-	// fa.add(p)
-	//
-	// skydiver = engine.apply_force(skydiver, fa)
-	// skydiver = engine.simulate(skydiver, frames.delta)
-	//
-	// return skydiver
-}
+
+	var area = (skydiver.diameter / 2) * Math.PI;
+	var fa = skydiver.velocity.copy();
+	fa.mult(skydiver.velocity.mag());
+	fa.mult(area);
+	fa.mult(FRICTION.density);
+	fa.mult(FRICTION.coefficient);
+	fa.mult(-0.5);
+
+	skydiver = engine.apply_force(skydiver, GRAVITY.copy());
+	skydiver = engine.apply_force(skydiver, fa.copy());
+	skydiver = engine.simulate(skydiver, frames.delta);
+
+	return skydiver;
+};
 
 function ex_03(skydiver) {
 
 	return ex_01_02(skydiver);
-}
+};
 
 function ex_04(skydiver) {
 
 	return ex_01_01(skydiver);
-}
+};
