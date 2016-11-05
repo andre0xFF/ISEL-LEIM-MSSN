@@ -33,6 +33,7 @@ function setup() {
 	}
 
 	skydivers[2].mass = 80;
+	skydivers[3].mass = 80 + 20;
 };
 
 function draw() {
@@ -136,10 +137,10 @@ function ex_02(skydiver) {
 function ex_03(skydiver) {
 
 	if (skydiver.position.y > 300) {
-		return skydiver;
+		return ex_01_02(skydiver)
 	}
 
-	skydiver.diameter = 6;
+	skydiver.width = 6;
 
 	return ex_01_02(skydiver);
 };
