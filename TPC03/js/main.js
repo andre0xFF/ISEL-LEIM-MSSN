@@ -11,6 +11,7 @@ var frames = {
 var engine;
 
 /**
+ * Divers:
  * 00 << Free falling
  * 01 << Free falling euler
  * 02 << Free falling with friction
@@ -53,16 +54,20 @@ function draw() {
 
 	// translate the axis
 	translate(0, height);
-
+	// draw objects
+	for (var i = 0; i < skydivers.length; i++) {
+		skydivers[i].draw(height);
+	}
+	// apply forces and simulate
 	skydivers[0] = ex_01_01(skydivers[0]);
 	skydivers[1] = ex_01_02(skydivers[1]);
 	skydivers[2] = ex_02(skydivers[2]);
 	skydivers[3] = ex_03(skydivers[3]);
-	skydivers[4] = ex_04(skydivers[4]);
+	// skydivers[4] = ex_04(skydivers[4]);
 
 	pop();
 
-	verbose();
+	verbose(skydivers, frames);
 
 	var x = function(n) {
 		return ((width - 100) / 5) * n - ((width - 100) / 5) / 2;
@@ -76,13 +81,15 @@ function draw() {
 	text('Water diving', x(5), y);
 };
 
-function verbose() {
+function verbose(skydivers, frames) {
 
 	if (!VERBOSE) {
 		return;
 	}
 
 	textSize(10);
+
+	text('FPS:' + (60 * 2 / frames.delta).toFixed(0), 5, 10);
 
 	var x = function(n) {
 		return ((width - 100) / 5) * n - ((width - 100) / 5) / 2;
@@ -96,56 +103,54 @@ function verbose() {
 };
 
 function ex_01_01(skydiver) {
-	// update object
-	skydiver.draw(height);
-	// calculate forces
-	skydiver = engine.apply_force(skydiver, GRAVITY.copy());
-	// simulate movement
-	skydiver = engine.simulate(skydiver, frames.delta);
 
-	return skydiver;
+	skydiver = engine.apply_force(skydiver, p5.Vector.mult(GRAVITY, skydiver.mass));
+	return engine.simulate(skydiver, frames.delta);
 };
 
 function ex_01_02(skydiver) {
 
-	skydiver.draw(height);
-	skydiver = engine.apply_force(skydiver, GRAVITY.copy());
-	skydiver = engine.euler(skydiver, engine.time);
+	skydiver = engine.apply_force(skydiver, GRAVITY);
 
-	return skydiver;
+	return engine.euler(skydiver, engine.time);
 };
 
 function ex_02(skydiver) {
 
-	skydiver.draw(height);
+	var area = Math.pow(skydiver.width / 2, 2) * Math.PI;
+	var friction = get_friction(skydiver.velocity, area);
 
-	var area = (skydiver.diameter / 2) * Math.PI;
-	var fa = skydiver.velocity.copy();
-	fa.mult(skydiver.velocity.mag());
-	fa.mult(area);
-	fa.mult(FRICTION.density);
-	fa.mult(FRICTION.coefficient);
-	fa.mult(-0.5);
+	skydiver = engine.apply_force(skydiver, p5.Vector.mult(GRAVITY, skydiver.mass));
+	skydiver = engine.apply_force(skydiver, friction);
 
-	skydiver = engine.apply_force(skydiver, GRAVITY.copy());
-	skydiver = engine.apply_force(skydiver, fa.copy());
-	skydiver = engine.simulate(skydiver, frames.delta);
-
-	return skydiver;
+	return engine.simulate(skydiver, frames.delta);
 };
 
 function ex_03(skydiver) {
 
-	if (skydiver.position.y > 300) {
-		return ex_01_02(skydiver)
+	var PARACHUTE_HEIGHT = 300;
+
+	skydiver = engine.apply_force(skydiver, p5.Vector.mult(GRAVITY, skydiver.mass));
+
+	if (skydiver.position.y <= PARACHUTE_HEIGHT) {
+		skydiver.width = 6;
+		var area = Math.pow(skydiver.width / 2, 2) * Math.PI;
+		var friction = get_friction(skydiver.velocity, area);
+
+		skydiver = engine.apply_force(skydiver, friction)
 	}
 
-	skydiver.width = 6;
-
-	return ex_01_02(skydiver);
+	return engine.simulate(skydiver, frames.delta);
 };
 
 function ex_04(skydiver) {
 
 	return ex_01_01(skydiver);
 };
+
+function get_friction(velocity, area) {
+
+	var friction = velocity.copy();
+	friction.mult((-0.5) * FRICTION.coefficient * FRICTION.density * area * friction.copy().mag());
+	return friction;
+}

@@ -33,8 +33,7 @@ Engine.prototype.simulate = function(object, delta) {
 
 Engine.prototype.apply_force = function(object, force) {
 
-	// var f = object.acceleration.copy().add(force).mult(object.mass);
-	object.acceleration = object.acceleration.copy().add(force).mult(object.mass).div(object.mass);
-	// object.acceleration = f.copy().div(object.mass)
+	var f = p5.Vector.div(force, object.mass);
+	object.acceleration.add(f);
 	return object;
 };
