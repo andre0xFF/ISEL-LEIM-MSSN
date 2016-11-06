@@ -22,7 +22,7 @@ var Engine = function() {
 Engine.prototype.euler = function(object, time) {
 
 	object.velocity.y = 0 + object.acceleration.y * time;
-	object.position.y = INITIAL_HEIGHT + 0.5 * object.acceleration.y * Math.pow(time, 2);
+	object.position.y = INITIAL_ALTITUDE + 0.5 * object.acceleration.y * Math.pow(time, 2);
 
 	if (object.position.y - object.height * 10 / 2 <= 0) {
 		object.position.y = object.height * 10 / 2;

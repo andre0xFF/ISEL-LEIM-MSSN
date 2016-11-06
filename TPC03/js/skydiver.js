@@ -8,6 +8,7 @@ var Skydiver = function(position, velocity, acceleration) {
 	this.height = 2;
 	this.mass = 10;
 	this.flight_time = millis();
+	this.parachute = true;
 };
 
 Skydiver.prototype.draw = function(canvas_height) {
