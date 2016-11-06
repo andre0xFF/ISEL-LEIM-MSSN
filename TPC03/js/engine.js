@@ -15,6 +15,10 @@ var Engine = function() {
 	this.pause = false;
 };
 
+/**
+ * Calculate object's motion based on Euler calculation
+ * Similar to skydiver's move
+ */
 Engine.prototype.euler = function(object, time) {
 
 	object.velocity.y = 0 + object.acceleration.y * time;
@@ -24,17 +28,26 @@ Engine.prototype.euler = function(object, time) {
 		object.position.y = object.height * 10 / 2;
 		object.velocity.y = 0;
 	}
+	else {
+		object.flight_time = (millis() - object.flight_time) / 1000;
+	}
 
 	object.acceleration.mult(0);
 	return object;
 };
 
+/**
+ * Simulate object's motion in the environment
+ */
 Engine.prototype.simulate = function(object, delta) {
 
 	object.move(delta);
 	return object;
 };
 
+/**
+ * Apply an external force to the object
+ */
 Engine.prototype.apply_force = function(object, force) {
 
 	var f = p5.Vector.div(force, object.mass);
@@ -42,6 +55,9 @@ Engine.prototype.apply_force = function(object, force) {
 	return object;
 };
 
+/**
+ * Get friction vector
+ */
 Engine.prototype.get_friction = function(velocity, coefficient, density, area) {
 
 	return (

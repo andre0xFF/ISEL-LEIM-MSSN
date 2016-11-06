@@ -45,23 +45,24 @@ function draw() {
 		return;
 	}
 
+	// Engine and frames calculations
 	frames.current = millis();
 	frames.delta = frames.current - frames.previous;
 	frames.previous = frames.current;
-	frames.fps = (60 * 2 / frames.delta);
+	frames.fps = (1000 * 2 / frames.delta).toFixed(0);
 	engine.time = (frames.current - engine.initial_time) / 1000;
 
 	background('#70c989');
 
 	push();
 
-	// translate the axis
+	// Translate the axis in 2D. The y-axis is still inverted
 	translate(0, height);
-	// draw objects
+	// Draw all objects
 	for (var i = 0; i < skydivers.length; i++) {
 		skydivers[i].draw(height);
 	}
-	// apply forces and simulate
+	// Apply forces and simulate
 	skydivers[0] = ex_01_01(skydivers[0]);
 	skydivers[1] = ex_01_02(skydivers[1]);
 	skydivers[2] = ex_02(skydivers[2]);
@@ -69,12 +70,12 @@ function draw() {
 	skydivers[4] = ex_04(skydivers[4]);
 
 	pop();
-
+	// Show objects' variables
 	verbose(skydivers, frames);
-
+	// Show objects' conditions
 	var x = function(n) {
 		return ((width - 100) / 5) * n - ((width - 100) / 5) / 2;
-	}
+	};
 	var y = 150;
 
 	text('Falling', x(1), y);
@@ -91,11 +92,11 @@ function verbose(skydivers, frames) {
 	}
 
 	textSize(10);
-	text('FPS:' + frames.fps.toFixed(0), 5, 10);
+	text('FPS: ' + frames.fps, 5, 10);
 
 	var x = function(n) {
 		return ((width - 100) / 5) * n - ((width - 100) / 5) / 2;
-	}
+	};
 	var y = 40;
 
 	for (var i = 0; i < skydivers.length; i++) {
