@@ -6,7 +6,7 @@ var Skydiver = function(position, velocity, acceleration) {
 	this.acceleration = acceleration;
 	this.width = 2;
 	this.height = 2;
-	this.mass = 1;
+	this.mass = 10;
 	this.flight_time = millis();
 };
 
@@ -38,6 +38,9 @@ Skydiver.prototype.move = function(delta) {
 	}
 };
 
+/**
+ * Output skydiver's info
+ */
 Skydiver.prototype.verbose = function() {
 
 	var direction = this.velocity.copy().normalize();
