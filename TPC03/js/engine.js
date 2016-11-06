@@ -1,7 +1,7 @@
 var Engine = function() {
 
 	GRAVITY = createVector(0, -9.81);
-	WIND_FRICTION = {
+	AIR_FRICTION = {
 		coefficient: 1,
 		density: 1.29
 	};

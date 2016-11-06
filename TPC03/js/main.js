@@ -16,8 +16,8 @@ var engine;
  * 00 << Free falling
  * 01 << Free falling (euler)
  * 02 << Free falling with friction
- * 03 << Free falling and parachuting
- * 04 << Free falling and water diving
+ * 03 << Free falling with friction and parachuting
+ * 04 << Free falling with friction and water diving
  */
 var skydivers = [];
 
@@ -122,9 +122,10 @@ function ex_01_02(skydiver) {
 function ex_02(skydiver) {
 
 	var area = Math.pow(skydiver.width / 2, 2) * Math.PI;
-	var friction = engine.get_friction(skydiver.velocity, WIND_FRICTION.coefficient, WIND_FRICTION.density, area);
+	var air_friction = engine.get_friction(skydiver.velocity, AIR_FRICTION.coefficient, AIR_FRICTION.density, area);
+
 	skydiver = engine.apply_force(skydiver, p5.Vector.mult(GRAVITY, skydiver.mass));
-	skydiver = engine.apply_force(skydiver, friction);
+	skydiver = engine.apply_force(skydiver, air_friction);
 
 	return engine.simulate(skydiver, frames.delta);
 };
@@ -132,12 +133,14 @@ function ex_02(skydiver) {
 function ex_03(skydiver) {
 
 	var PARACHUTE_HEIGHT = 300;
-	skydiver = engine.apply_force(skydiver, p5.Vector.mult(GRAVITY, skydiver.mass));
+
+	skydiver = ex_02(skydiver);
 
 	if (skydiver.position.y <= PARACHUTE_HEIGHT) {
-		skydiver.width = 6;
 		var area = Math.pow(skydiver.width / 2, 2) * Math.PI;
-		var friction = engine.get_friction(skydiver.velocity, WIND_FRICTION.coefficient, WIND_FRICTION.density, area);
+		var friction = engine.get_friction(skydiver.velocity, AIR_FRICTION.coefficient, AIR_FRICTION.density, area);
+
+		skydiver.width = 6;
 		skydiver = engine.apply_force(skydiver, friction);
 	}
 
@@ -147,12 +150,14 @@ function ex_03(skydiver) {
 function ex_04(skydiver) {
 
 	var PARACHUTE_HEIGHT = 300;
-	skydiver = engine.apply_force(skydiver, p5.Vector.mult(GRAVITY, skydiver.mass));
 
-	if (skydiver.position.y <= PARACHUTE_HEIGHT) {
+	skydiver = ex_02(skydiver);
+
+	if (skydiver.position.y <= PARACHUTE_HEIGHT && !skydiver.parachute_open) {
 		var area = Math.pow(skydiver.width / 2, 2) * Math.PI;
-		var friction = engine.get_friction(skydiver.velocity, WATER_FRICTION.coefficient, WATER_FRICTION.density, area);
-		skydiver = engine.apply_force(skydiver, friction)
+		var water_friction = engine.get_friction(skydiver.velocity, WATER_FRICTION.coefficient, WATER_FRICTION.density, area);
+
+		skydiver = engine.apply_force(skydiver, water_friction)
 	}
 
 	return engine.simulate(skydiver, frames.delta);
