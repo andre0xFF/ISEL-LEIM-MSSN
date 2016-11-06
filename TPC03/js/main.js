@@ -90,7 +90,7 @@ function draw() {
 	text('Friction', x(3), y);
 	text('Parachuting', x(4), y);
 	text('Water diving', x(5), y);
-	text('Water diving; Parachute drop', x(6), y)
+	text('Water diving + Parachute drop', x(6), y)
 
 	var y = map(INITIAL_ALTITUDE - PARACHUTE_ALTITUDE, 0, INITIAL_ALTITUDE, 0, height);
 	line(0, y, width, y);
@@ -179,5 +179,14 @@ function ex_04_02(skydiver) {
 	}
 
 	return ex_04_01(skydiver);
+}
 
+function mouseWheel(event) {
+
+	for (var i = 0; i < skydivers.length; i++) {
+		if(i == 1) {
+			continue;
+		}
+		skydivers[i].position.y -= event.delta / 5;
+	}
 }
