@@ -1,11 +1,11 @@
 var Engine = function() {
 
 	GRAVITY = createVector(0, -9.81);
-	AIR_FRICTION = {
+	AIR = {
 		coefficient: 1,
 		density: 1.29
 	};
-	WATER_FRICTION = {
+	WATER = {
 		coefficient: 1,
 		density: 1000
 	};
@@ -60,9 +60,7 @@ Engine.prototype.apply_force = function(object, force) {
  */
 Engine.prototype.get_friction = function(velocity, coefficient, density, area) {
 
-	return (
-		p5.Vector.mult(
-			velocity.copy(),
-			(-0.5) * coefficient * density * area * velocity.copy().mag()
-	));
+	var v = velocity.copy();
+
+	return p5.Vector.mult(v, (-0.5) * coefficient * density * area * v.mag());
 }
