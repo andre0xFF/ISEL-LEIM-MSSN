@@ -27,8 +27,7 @@ Engine.prototype.euler = function(object, time) {
 	if (object.position.y - object.height * 10 / 2 <= 0) {
 		object.position.y = object.height * 10 / 2;
 		object.velocity.y = 0;
-	}
-	else {
+	} else {
 		object.flight_time = (millis() - object.flight_time) / 1000;
 	}
 
@@ -60,7 +59,9 @@ Engine.prototype.apply_force = function(object, force) {
  */
 Engine.prototype.get_friction = function(velocity, coefficient, density, area) {
 
-	var v = velocity.copy();
+	// var v = velocity.copy();
+	//
+	// return p5.Vector.mult(v.normalize(), (-0.5) * coefficient * density * area * v.mag());
 
-	return p5.Vector.mult(v, (-0.5) * coefficient * density * area * v.mag());
+	return p5.Vector.mult(velocity.copy().normalize(), velocity.copy().mag() * coefficient * -1 * density * area);
 }
