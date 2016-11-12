@@ -144,7 +144,6 @@ function ex_02(skydiver) {
 
 	var area = Math.pow(skydiver.width / 2, 2) * Math.PI;
 	var air_friction = engine.get_friction(skydiver.velocity, AIR.coefficient, AIR.density, area);
-	air_friction.y += skydiver.mass * GRAVITY.y
 
 	skydiver = engine.apply_force(skydiver, air_friction);
 	skydiver = engine.apply_force(skydiver, p5.Vector.mult(GRAVITY, skydiver.mass));
@@ -157,8 +156,10 @@ function ex_02(skydiver) {
  */
 function ex_03(skydiver) {
 
-	if (skydiver.position.y <= PARACHUTE_ALTITUDE) {
+	if (skydiver.position.y <= PARACHUTE_ALTITUDE && skydiver.parachute) {
 		skydiver.width = 6;
+		skydiver.height = 3;
+		skydiver.parachute = false;
 	}
 
 	return ex_02(skydiver);
@@ -175,9 +176,9 @@ function ex_04_01(skydiver) {
 
 	var area = Math.pow(skydiver.width / 2, 2) * Math.PI;
 	var water_friction = engine.get_friction(skydiver.velocity, WATER.coefficient, WATER.density, area);
-	// water_friction.y += skydiver.mass * GRAVITY.y
 
 	skydiver = engine.apply_force(skydiver, water_friction);
+	skydiver = engine.apply_force(skydiver, p5.Vector.mult(GRAVITY, skydiver.mass));
 
 	return engine.simulate(skydiver, frames.delta);
 };
@@ -193,11 +194,8 @@ function ex_04_02(skydiver) {
 	}
 
 	return ex_04_01(skydiver);
-}
+};
 
-/**
- * Free falling with friction, water diving and parachute drop
- */
 function mouseWheel(event) {
 
 	for (var i = 0; i < skydivers.length; i++) {
@@ -206,4 +204,4 @@ function mouseWheel(event) {
 		}
 		skydivers[i].position.y -= event.delta / 5;
 	}
-}
+};
