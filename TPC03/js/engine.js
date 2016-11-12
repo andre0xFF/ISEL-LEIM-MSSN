@@ -63,5 +63,5 @@ Engine.prototype.get_friction = function(velocity, coefficient, density, area) {
 	//
 	// return p5.Vector.mult(v.normalize(), (-0.5) * coefficient * density * area * v.mag());
 
-	return p5.Vector.mult(velocity.copy().normalize(), velocity.copy().mag() * coefficient * -1 * density * area);
+	return p5.Vector.mult(velocity.copy().normalize(), velocity.copy().mag() * coefficient * -0.5 * density * area);
 }
