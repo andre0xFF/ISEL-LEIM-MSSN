@@ -1,0 +1,5 @@
+{
+  "standard": {
+    "globals": ["p5", "INITIAL_ALTITUDE", "GRAVITY", "AIR", "WATER", "VERBOSE", "NUM_OBJECTS", "PARACHUTE_ALTITUDE", "width", "height"]
+  }
+}
