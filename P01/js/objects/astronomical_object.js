@@ -1,4 +1,0 @@
-// sun
-// planets
-// stars
-// nebula
