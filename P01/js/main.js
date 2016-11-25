@@ -86,7 +86,7 @@ function do_controllers() {
 
   if (keyIsDown(KEY_A)) {
 
-    player.recharge_laser();
+    player.recharge();
   }
 
   if (keyIsDown(KEY_D)) {
@@ -122,21 +122,21 @@ function calculate_attraction(attractor, mover) {
 
   return p5.Vector.mult(r_norm, fr);
 }
-function calculate_attraction_02(attractor, mover) {
-
-  // Calculate direction of force
-  var force = p5.Vector.sub(attractor.position, mover.position);
-  // Distance between objects
-  var distance = force.mag();
-  // Limiting the distance to eliminate "extreme" results
-  // for very close or very far objects
-  distance = constrain(distance, 5, 25);
-  // Normalize vector
-  force.normalize();
-  // Calculate gravitional force magnitude
-  var strength = (attractor.G * attractor.mass * mover.mass) / (distance * distance);
-  // Get force vector --> magnitude * direction
-  force.mult(strength);
-  return force;
-}
+// function calculate_attraction_02(attractor, mover) {
+//
+//   // Calculate direction of force
+//   var force = p5.Vector.sub(attractor.position, mover.position);
+//   // Distance between objects
+//   var distance = force.mag();
+//   // Limiting the distance to eliminate "extreme" results
+//   // for very close or very far objects
+//   distance = constrain(distance, 5, 25);
+//   // Normalize vector
+//   force.normalize();
+//   // Calculate gravitional force magnitude
+//   var strength = (attractor.G * attractor.mass * mover.mass) / (distance * distance);
+//   // Get force vector --> magnitude * direction
+//   force.mult(strength);
+//   return force;
+// }
 function check_collision() {}
