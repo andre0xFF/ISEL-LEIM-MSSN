@@ -12,6 +12,7 @@ var player;
 var planets = [];
 var level = 1;
 var n_planets = 6;
+var particles_systems = [];
 
 function setup() {
 
@@ -145,7 +146,29 @@ function do_views() {
 
   for (var i = 0; i < planets.length; i++) {
 
-    planets[i].active ? planets[i].draw() : planets.splice(i, 1);
+    if (planets[i].active) {
+
+      planets[i].draw();
+    }
+    else {
+
+      var ps = new Particle_System(planets[i].position);
+      ps.addParticles(random(7, 20));
+      particles_systems.push(ps);
+      planets.splice(i, 1);
+    }
+  }
+
+  for (var i = 0; i < particles_systems.length; i++) {
+
+    if (particles_systems[i].particles.length > 0) {
+
+      particles_systems[i].run();
+    }
+    else {
+
+      particles_systems.splice(i, 1);
+    }
   }
 
   for (var i = 0; i < player.pulses.length; i++) {
