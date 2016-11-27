@@ -20,17 +20,15 @@ var Player = function () {
 Player.prototype.draw = function () {
 
   this.body.draw(this.position);
-
-  for (var i = 0; i < this.pulses.length; i++) {
-
-    this.pulses[i].active ? this.pulses[i].draw() : this.pulses.splice(i, 1);
-  }
 }
-Player.prototype.update = function () {
+Player.prototype.recharge = function () {
 
-  this.velocity.add(this.acceleration);
-  this.position.add(this.velocity);
-  this.acceleration.mult(0);
+  if (this.energy >= MAX_ENERGY) {
+
+    return;
+  }
+  this.laser.recharge(this.position, createVector(0, -1));
+  this.energy += this.laser.consumption;
 }
 Player.prototype.light_beam = function () {
 
@@ -38,7 +36,7 @@ Player.prototype.light_beam = function () {
 
     return;
   }
-  this.laser.shoot(this.position, createVector(this.position.x, 0));
+  this.laser.shoot(this.position, createVector(0, -1));
   this.energy -= this.laser.consumption;
 }
 Player.prototype.light_pulse = function () {
@@ -48,18 +46,8 @@ Player.prototype.light_pulse = function () {
     return;
   }
 
-
   this.pulses.push(new Pulse(this.position));
   this.energy -= this.pulses[0].consumption;
-}
-Player.prototype.recharge = function () {
-
-  if (this.energy >= MAX_ENERGY) {
-
-    return;
-  }
-  this.laser.recharge(this.position, createVector(this.position.x, 0));
-  this.energy += this.laser.consumption;
 }
 
 /**
@@ -67,22 +55,48 @@ Player.prototype.recharge = function () {
  */
 var Spaceship = function () {
 
-  this.color = 'rgb(212, 32, 32)'
+  this.color = 'rgb(179, 255, 0)'
   this.width = 40;
   this.height = 15;
 }
 Spaceship.prototype.draw = function (position) {
 
+  var vertices = [
+    // left wing
+    [-27, -9, -25, -11, -16, -11, -18, -9],
+    // right wing
+    [+27, -9, +25, -11, +16, -11, +18, -9],
+    // engine
+    [-18, -9, -15, -13, +15, -13, +18, -9],
+    // fuel tank
+    [-20, +0, +20,  +0, +27,  -9, -27, -9]
+    // cockpit
+  ];
+  var scale = 1;
+
   push();
   {
-    stroke('rgb(68, 9, 43)');
+    translate(position.x, position.y);
+
+    stroke(COSMOS_COLOR);
+    strokeWeight(1);
     fill(this.color);
-    rectMode(CENTER);
-    rect(position.x, position.y - this.height * 0, this.width, this.height, 10);
-    rect(position.x, position.y - this.height * 1, this.width / 1.5, this.height, 10);
-    rect(position.x, position.y - this.height * 2, this.width / 2, this.height, 10);
+    ellipse(0, 0, 40, 40);
     fill(COSMOS_COLOR);
-    ellipse(position.x, position.y, 3, 3);
+    rectMode(CORNERS);
+    rect(-27, -1 * -9, 27, -1 * -20);
+    fill(this.color);
+
+    for (var i = 0; i < vertices.length; i++) {
+
+      beginShape();
+      {
+        for (var j = 0; j < vertices[i].length - 1; j++) {
+            vertex(vertices[i][j] * scale, -1 * vertices[i][++j] * scale);
+        }
+      }
+      endShape(CLOSE);
+    }
   }
   pop();
 }
@@ -90,36 +104,42 @@ Spaceship.prototype.draw = function (position) {
 /**
  * Laser view
  */
-var Laser = function (position) {
+var Laser = function () {
 
+  this.magnitude = 1000;
   this.in_color = 'rgba(230, 204, 33, 0.55)'
   this.out_color = 'rgba(0, 64, 255, 0.54)';
   this.glow = 'rgba(227, 22, 194, 0.63)';
-  this.offset = 5;
-  this.damage = 4;
+  this.offset = 10;
+  this.damage = 100/6;
   this.consumption = 0.5;
 }
-Laser.prototype.shoot = function (position, target) {
+Laser.prototype.shoot = function (origin, direction) {
+
+  this.origin = origin;
+  this.direction = direction;
+
+  var target = p5.Vector.add(origin, p5.Vector.mult(direction, this.magnitude));
 
   push();
   {
-    rectMode(CORNERS);
-    stroke(this.glow);
-    strokeWeight(3);
+    stroke(this.out_color);
+    strokeWeight(this.offset);
     fill(this.out_color);
-    rect(position.x - this.offset, position.y - this.offset, target.x + this.offset, target.y + this.offset);
+    line(origin.x, origin.y, target.x, target.y);
   }
   pop();
 }
-Laser.prototype.recharge = function (position, target) {
+Laser.prototype.recharge = function (origin, direction) {
+
+  var target = p5.Vector.add(origin, p5.Vector.mult(direction, this.magnitude));
 
   push();
   {
-    rectMode(CORNERS);
-    stroke(this.glow);
-    strokeWeight(3);
-    fill(this.in_color);
-    rect(position.x - this.offset, position.y - this.offset, target.x + this.offset, target.y + this.offset);
+    stroke(this.in_color);
+    strokeWeight(10);
+    fill(this.out_color);
+    line(origin.x, origin.y, target.x, target.y);
   }
   pop();
 }
@@ -131,39 +151,40 @@ var Pulse = function (position) {
 
   this.active = true;
   this.position = position.copy();
-  this.velocity = createVector(0, -0.5);
-  this.acceleration = createVector(0, -0.1);
-  this.out_color = 'rgba(0, 64, 255, 0.54)';
+  this.velocity = createVector(0, -1);
+  this.acceleration = createVector(0, 0);
+  this.mass = 1;
+  this.color = 'rgba(0, 64, 255, 0.54)';
   this.glow = 'rgba(227, 22, 194, 0.63)';
   this.offset = 5;
-  this.position_offset = 15 * 2;
+  this.position_offset = 25;
   this.damage = 1;
+  this.propulsion = 0.1;
   this.consumption = 0.25;
 }
 Pulse.prototype.draw = function () {
 
-  if(!this.active) {
+  if (!this.active) {
     return;
   }
 
-  this.update();
+  this.active = this.check_active();
 
   push();
   {
     rectMode(CENTER);
     stroke(this.glow);
     strokeWeight(3);
-    fill(this.out_color);
+    fill(this.color);
     rect(this.position.x, this.position.y - this.position_offset, this.offset, this.offset);
   }
 }
-Pulse.prototype.update = function () {
+Pulse.prototype.check_active = function () {
 
-  if (this.position.x < 0 || this.position.x > CANVAS_HEIGHT || this.position.y < 0 || this.position.y > CANVAS_WIDTH) {
-    this.active = false;
-  }
-
-  this.velocity.add(this.acceleration);
-  this.position.add(this.velocity);
-  // this.acceleration.mult(0);
+  return (
+    this.position.x > 0 &&
+    this.position.x < CANVAS_WIDTH &&
+    this.position.y > 0 &&
+    this.position.y < CANVAS_HEIGHT
+  );
 }

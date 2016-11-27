@@ -1,4 +1,3 @@
-const N_PLANETS = 6;
 const CANVAS_WIDTH = 1200;
 const CANVAS_HEIGHT = 920;
 const SYSTEM_RADIUS = 100;
@@ -11,6 +10,8 @@ var sun;
 var nebula;
 var player;
 var planets = [];
+var level = 1;
+var n_planets = 6;
 
 function setup() {
 
@@ -26,7 +27,7 @@ function init() {
   {
     // Sun
     var position = createVector(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
-    var mass = 30;
+    var mass = 40;
     sun = new Attractor(position, mass);
   };
   {
@@ -40,7 +41,7 @@ function init() {
   };
   {
     // Planets
-    for (var i = 0; i < N_PLANETS; i++) {
+    for (var i = 0; i < n_planets; i++) {
 
       var position = createVector(rand(SYSTEM_RADIUS, width - SYSTEM_RADIUS), rand(SYSTEM_RADIUS, height - SYSTEM_RADIUS));
       var mass = rand(5, 10);
@@ -55,33 +56,69 @@ function draw() {
   do_physics();
   do_controllers();
   do_views();
+
+  if (planets.length === 0) {
+
+    level += 1;
+    n_planets += 2;
+    init();
+  }
 }
 function do_physics() {
 
-  player.update();
+  Physics.apply_acceleration(player);
+
+  for (var i = 0; i < player.pulses.length; i++) {
+
+    if (Collider.pulse_planet(player.pulses[i], nebula)) {
+
+      var f = Physics.calculate_friction(nebula, player.pulses[i]);
+      Physics.apply_force(player.pulses[i], f);
+    }
+
+    for (var j = 0; j < planets.length; j++) {
+
+      if (Collider.pulse_planet(player.pulses[i], planets[j])) {
+
+        planets[j].health -= player.pulses[i].damage;
+      }
+    }
+
+    Physics.apply_force(player.pulses[i], createVector(0, -1 * player.pulses[i].propulsion));
+    Physics.apply_acceleration(player.pulses[i]);
+  }
 
   for (var i = 0; i < planets.length; i++) {
 
-    var force = calculate_attraction(sun, planets[i]);
-    apply_force(planets[i], force);
-    planets[i].update();
+    var force = Physics.calculate_attraction(sun, planets[i]);
+    Physics.apply_force(planets[i], force);
+    Physics.apply_acceleration(planets[i]);
+    // planets[i].update();
   }
 }
 function do_controllers() {
 
   if (keyIsDown(LEFT_ARROW)) {
 
-    apply_force(player, createVector(-.1, 0));
+    Physics.apply_force(player, createVector(-.1, 0));
   }
 
   if (keyIsDown(RIGHT_ARROW)) {
 
-    apply_force(player, createVector(.1, 0));
+    Physics.apply_force(player, createVector(.1, 0));
   }
 
   if (keyIsDown(KEY_S)) {
 
     player.light_beam();
+
+    for (var i = 0; i < planets.length; i++) {
+
+      if (Collider.laser_planet(player.laser, planets[i])) {
+
+        planets[i].health -= player.laser.damage;
+      }
+    }
   }
 
   if (keyIsDown(KEY_A)) {
@@ -93,6 +130,12 @@ function do_controllers() {
 
     player.light_pulse();
   }
+
+  if (player.position.x < 0 || player.position.x > CANVAS_WIDTH) {
+
+    player.velocity.mult(-1);
+    player.acceleration.mult(0);
+  }
 }
 function do_views() {
 
@@ -102,41 +145,11 @@ function do_views() {
 
   for (var i = 0; i < planets.length; i++) {
 
-    planets[i].draw();
+    planets[i].active ? planets[i].draw() : planets.splice(i, 1);
+  }
+
+  for (var i = 0; i < player.pulses.length; i++) {
+
+    player.pulses[i].active ? player.pulses[i].draw() : player.pulses.splice(i, 1);
   }
 }
-function apply_force(mover, force) {
-
-  var f = p5.Vector.div(force, mover.mass);
-  mover.acceleration.add(f);
-}
-function calculate_attraction(attractor, mover) {
-
-  var r = p5.Vector.sub(attractor.position, mover.position);
-  var r_magn = r.copy().mag();
-  var r_norm = r.copy().normalize();
-
-  var fr = attractor.mass * mover.mass;
-  fr /= r_magn;
-  fr *= attractor.G;
-
-  return p5.Vector.mult(r_norm, fr);
-}
-// function calculate_attraction_02(attractor, mover) {
-//
-//   // Calculate direction of force
-//   var force = p5.Vector.sub(attractor.position, mover.position);
-//   // Distance between objects
-//   var distance = force.mag();
-//   // Limiting the distance to eliminate "extreme" results
-//   // for very close or very far objects
-//   distance = constrain(distance, 5, 25);
-//   // Normalize vector
-//   force.normalize();
-//   // Calculate gravitional force magnitude
-//   var strength = (attractor.G * attractor.mass * mover.mass) / (distance * distance);
-//   // Get force vector --> magnitude * direction
-//   force.mult(strength);
-//   return force;
-// }
-function check_collision() {}

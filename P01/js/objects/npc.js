@@ -2,6 +2,9 @@ var Attractor = function (position, mass) {
 
   this.position = position;
   this.mass = mass;
+  this.radius = mass * 2;
+  this.shot_direction = createVector(0, 0);
+  this.amplified_shot = 90;
   this.G = .2;
   this.color = 'rgb(227, 22, 194)'
   this.glow = 'rgba(227, 22, 194, 0.63)'
@@ -10,51 +13,60 @@ var Attractor = function (position, mass) {
 Attractor.prototype.draw = function () {
 
   var amplified_glow = map(noise(this.glow_effect), 0, 1, 10, 100);
+  this.glow_effect += 0.01;
 
   push();
   {
     stroke(this.glow);
     strokeWeight(amplified_glow);
     fill(this.color);
-    ellipse(this.position.x, this.position.y, this.mass * 2);
+    ellipse(this.position.x, this.position.y, this.radius);
   }
   pop();
-
-  this.glow_effect += 0.01;
 }
-Attractor.prototype.light_beam = function () {
-  //TODO
+
+Attractor.prototype.light_beam_collision = function (target) {
+  // TODO
+  return (
+    laser.collision(this.position, this.shot_direction, target) ||
+    laser.collision(this.position, p5.Vector.add(this.shot_direction, 0.2), target) ||
+    laser.collision(this.position, p5.Vector.add(this.shot_direction, -0.2), target)
+  );
 }
 var Mover = function (position, mass) {
 
   this.position = position;
   this.velocity = createVector(1, 0);
-  this.acceleration = createVector(0, 0);
+  this.acceleration = createVector(0, -.1);
   this.mass = mass;
+  this.radius = mass * 3;
   this.color = 'rgb(81, 205, 190)'
   this.glow = 'rgba(227, 22, 194, 0.63)';
   this.health = 100;
+  this.active = true;
 }
 Mover.prototype.draw = function () {
+
+  if (this.active && this.health <= 0) {
+
+    this.active = false;
+    return;
+  }
 
   push();
   {
     stroke(this.glow);
     strokeWeight(3);
     fill(this.color);
-    ellipse(this.position.x, this.position.y, this.mass * 3);
+    ellipse(this.position.x, this.position.y, this.radius);
   }
   pop();
-}
-Mover.prototype.update = function () {
-
-  this.velocity.add(this.acceleration);
-  this.position.add(this.velocity);
-  this.acceleration.mult(0);
 }
 var Nebula = function (position) {
 
   this.position = position;
+  this.radius = 250;
+  this.ca = .05;
   this.color = 'rgba(60, 51, 51, 0.1)';
 }
 Nebula.prototype.draw = function () {
@@ -63,7 +75,7 @@ Nebula.prototype.draw = function () {
   {
     noStroke();
     fill(this.color);
-    ellipse(this.position.x, this.position.y, 500);
+    ellipse(this.position.x, this.position.y, this.radius * 2);
   }
   pop();
 }
