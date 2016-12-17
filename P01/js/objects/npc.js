@@ -24,15 +24,6 @@ Attractor.prototype.draw = function () {
   }
   pop();
 }
-
-Attractor.prototype.light_beam_collision = function (target) {
-  // TODO
-  return (
-    laser.collision(this.position, this.shot_direction, target) ||
-    laser.collision(this.position, p5.Vector.add(this.shot_direction, 0.2), target) ||
-    laser.collision(this.position, p5.Vector.add(this.shot_direction, -0.2), target)
-  );
-}
 var Mover = function (position, mass) {
 
   this.position = position;
