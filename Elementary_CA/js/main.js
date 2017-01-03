@@ -18,16 +18,18 @@ function draw() {
   ca.generate();
 
   // Generate a random rule set when CA reaches the bottom
-  if (ca.generation >= 35) {
+  if (ca.generation < 35) {
 
-    let rule_set = []
-
-    for (var i = 0; i < 8; i++) {
-
-      rule_set.push(Math.floor(random(0, 2)))
-    }
-    ca = new CA(width / 10, rule_set);
+    return
   }
+
+  let rule_set = []
+
+  for (var i = 0; i < 8; i++) {
+
+    rule_set.push(Math.floor(random(0, 2)))
+  }
+  ca = new CA(width / 10, rule_set);
 }
 
 class CA {
