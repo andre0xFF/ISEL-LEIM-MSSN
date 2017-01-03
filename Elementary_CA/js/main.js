@@ -1,3 +1,5 @@
+// http://mathworld.wolfram.com/CellularAutomaton.html
+
 let ca;
 
 function setup() {
