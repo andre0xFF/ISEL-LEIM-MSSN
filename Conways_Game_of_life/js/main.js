@@ -74,7 +74,6 @@ class GOL {
 
         // Remove own cell state
         c -= this.board[x][y]
-
         // Apply game of life rules
         next_gen[x][y] = this.rules(this.board[x][y], c)
       }
