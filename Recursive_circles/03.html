@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script type="text/javascript" src="../libs/0.5.5/p5.min.js"></script>
+    <script type="text/javascript">
+
+    function setup() {
+
+      createCanvas(800, 600)
+      draw_circle(width / 2, height / 2, 600)
+    }
+
+    function draw_circle(x, y, radius) {
+
+      ellipse(x, y, radius, radius)
+
+      if (radius > 15) {
+
+        radius *= .5
+        draw_circle(x + radius, y, radius)
+        draw_circle(x - radius, y, radius)
+        draw_circle(x, y + radius, radius)
+        draw_circle(x, y - radius, radius)
+      }
+    }
+    </script>
+  </head>
+  <body></body>
+</html>
