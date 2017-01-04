@@ -6,7 +6,8 @@
 * [Elementary Cellular Automata](https://andrewfonseca.github.io/MSSN/Elementary_CA/)
 * [Conways Game Of Life](https://andrewfonseca.github.io/MSSN/Conways_Game_of_life/)
 * [Recursive Circles](https://andrewfonseca.github.io/MSSN/Recursive_circles/)
-* [Cantor Set](https://andrewfonseca.github.io/MSSN/Cantor_set/) 
-* TPC04
+* [Cantor Set](https://andrewfonseca.github.io/MSSN/Cantor_set/)
+* [TPC04 - Conway's Game of life](https://andrewfonseca.github.io/MSSN/TPC4/Conways_Game_of_life/)
+* [TPC04 - L-System fractals](https://andrewfonseca.github.io/MSSN/TPC4/L_System/)
 * TPC05
 * P02
