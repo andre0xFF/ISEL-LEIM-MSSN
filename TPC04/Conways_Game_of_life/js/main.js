@@ -5,41 +5,71 @@ function setup() {
 
   createCanvas(800, 300)
 
+  background('#000000')
+  noStroke()
   gol = new GOL(width / CELL_SIZE, height / CELL_SIZE)
 }
 
 function draw() {
 
-  background('#ffffff')
   gol.generate()
   gol.draw()
+}
+
+class Cell {
+
+  constructor(state) {
+
+    this.set_state(state)
+  }
+
+  set_state(new_state) {
+
+    if (this.state == 0 && new_state == 1) {
+      // born
+      this.color = '#719bf9'
+    }
+    else if (new_state == 1) {
+      // alive
+      this.color = '#0234a4'
+    }
+    else if (this.state == 1 && new_state == 0) {
+      // died
+      this.color = '#c40796'
+    }
+    else {
+      // dead
+      this.color = '#001441'
+    }
+
+    this.state = new_state
+  }
 }
 
 class GOL {
 
   constructor(rows, columns) {
 
-    this.board = [,]
+    this.board = []
     this.cell_size = CELL_SIZE
 
     // Initialize multi-dimensional array
-    for (var i = 0; i < rows; i++) {
+    for (let i = 0; i < rows; i++) {
 
       this.board[i] = new Array(this.columns)
     }
 
     // Initialize cells
-    for (var x = 0; x < rows; x++) {
+    for (let x = 0; x < rows; x++) {
 
-      for (var y = 0; y < columns; y++) {
+      for (let y = 0; y < columns; y++) {
 
         if (x === 0 || y === 0 || x === this.columns - 1 || y === this.rows - 1) {
 
-          this.board[x][y] = 0;
-        }
-        else {
+          this.board[x][y] = new Cell(0);
+        } else {
 
-          this.board[x][y] = Math.floor(random(0, 2))
+          this.board[x][y] = new Cell(Math.floor(random(0, 2)))
         }
       }
     }
@@ -49,47 +79,68 @@ class GOL {
 
     let rows = this.board.length
     let columns = this.board[0].length
-    let next_gen = [,]
-
-    // Initialize multi-dimensional array
-    for (var i = 0; i < rows; i++) {
-
-      next_gen[i] = new Array(columns)
-    }
+    let next_gen = []
 
     // Loop all cells to check for neighbors
-    for (var x = 1; x < rows - 1; x++) {
+    for (let x = 0; x < rows; x++) {
 
-      for (var y = 1; y < columns - 1; y++) {
+      // Initialize aux multi-dimensional array
+      next_gen[x] = new Array(columns)
 
-        let c = 0
-        // Count the number of the cell neighbors
-        for (var i = -1; i < 2; i++) {
-
-          for (var j = -1; j < 2; j++) {
-
-            c += this.board[x + i][y + j]
-          }
-        }
-
-        // Remove own cell state
-        c -= this.board[x][y]
+      for (let y = 0; y < columns; y++) {
         // Apply game of life rules
-        next_gen[x][y] = this.rules(this.board[x][y], c)
+        let neighbors = this.count_neighbors(x, y)
+        let new_state = this.get_next_state(this.board[x][y].state, neighbors)
+
+        next_gen[x][y] = new Cell(this.board[x][y].state)
+        next_gen[x][y].set_state(new_state)
       }
     }
 
     this.board = next_gen
   }
 
-  rules(cell_state, n_neighbors) {
+  count_neighbors(row, column) {
 
-    // Loneliness
-    if (cell_state === 1 && n_neighbors < 2) { return 0 }
-    // Overpopulation
-    if (cell_state === 1 && n_neighbors > 3) { return 0 }
-    // Reproduction
-    if (cell_state === 0 && n_neighbors === 3) { return 1 }
+    let c = 0
+    let rows = this.board.length
+    let columns = this.board[0].length
+
+    for (let i = -1; i < 2; i++) {
+
+      if (row + i < 0 || row + i >= rows) {
+
+        continue
+      }
+
+      for (let j = -1; j < 2; j++) {
+
+        if (column + j < 0 || column + j >= columns || column + j === column && row + i === row) {
+
+          continue
+        }
+
+        c += this.board[row + i][column + j].state
+      }
+    }
+
+    return c
+  }
+
+  get_next_state(cell_state, n_neighbors) {
+
+    if (cell_state === 1 && n_neighbors < 2) {
+      // Loneliness
+      return 0
+    }
+    if (cell_state === 1 && n_neighbors > 3) {
+      // Overpopulation
+      return 0
+    }
+    if (cell_state === 0 && n_neighbors === 3) {
+      // Reproduction
+      return 1
+    }
     // Stasis
     return cell_state
   }
@@ -99,14 +150,12 @@ class GOL {
     let rows = this.board.length
     let columns = this.board[0].length
 
-    for (var x = 0; x < rows; x++) {
+    for (let x = 0; x < rows; x++) {
 
-      for (var y = 0; y < columns; y++) {
+      for (let y = 0; y < columns; y++) {
 
-        this.board[x][y] === 1 ? fill(0) : fill(255)
-
-        stroke('#b3b3b3')
-        rect(x * this.cell_size, y * this.cell_size, this.cell_size, this.cell_size)
+        fill(this.board[x][y].color)
+        ellipse(x * this.cell_size, y * this.cell_size, this.cell_size)
       }
     }
   }
