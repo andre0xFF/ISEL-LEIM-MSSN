@@ -1,10 +1,12 @@
 let CELL_SIZE = 8
 let gol
+let fps = 10
 
 function setup() {
 
-  createCanvas(800, 300)
+  createCanvas(600, 400)
 
+  frameRate(fps)
   background('#000000')
   noStroke()
   gol = new GOL(width / CELL_SIZE, height / CELL_SIZE)
@@ -14,6 +16,31 @@ function draw() {
 
   gol.generate()
   gol.draw()
+}
+
+function mousePressed() {
+
+  let x = Math.ceil(mouseX / CELL_SIZE)
+  let y = Math.ceil(mouseY / CELL_SIZE)
+
+  for (var row = -2; row < 3; row++) {
+
+    for (var column = -2; column < 3; column++) {
+
+      if (x + row > 0 && x + row < width / CELL_SIZE && y + column > 0 && y + column < height / CELL_SIZE) {
+
+        console.log(x + row, y + column)
+        gol.board[x + row][y + column] = new Cell(Math.ceil(random(0, 2)))
+      }
+    }
+  }
+}
+
+function mouseWheel(event) {
+
+  fps = constrain(fps + event.delta / 3, 0, 90)
+  frameRate(fps)
+  console.log(`Frame rate: ${fps}`)
 }
 
 class Cell {
