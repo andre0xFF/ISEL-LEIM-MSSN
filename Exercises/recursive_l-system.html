@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script type="text/javascript" src="../libs/0.5.5/p5.min.js"></script>
+    <script type="text/javascript">
+    let axiom = 'A'
+    let generation = 0
+
+    function setup() {
+
+      while (generation++ < 10) {
+
+        let next = ''
+        for (var i = 0; i < axiom.length; i++) {
+
+          next += apply_rules(axiom[i])
+        }
+
+        axiom = next
+        console.log(`G ${generation}, axiom: ${axiom}`)
+      }
+    }
+
+    function apply_rules(char) {
+
+      let rules = [
+
+        { a: 'A', b: 'ABC' },
+        { a: 'B', b: 'A' }
+      ]
+
+      for (var i = 0; i < rules.length; i++) {
+
+        if (rules[i].a === char) {
+
+          return rules[i].b
+        }
+      }
+
+      return char
+    }
+    </script>
+  </head>
+  <body></body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script type="text/javascript" src="../libs/0.5.5/p5.min.js"></script>
+    <script type="text/javascript">
+      let theta = 0
+
+      function setup() {
+
+        createCanvas(800, 600)
+        stroke(0)
+      }
+
+      function draw() {
+
+        background('#ffffff')
+        translate(width / 2, height)
+        theta += Math.PI / 500
+        draw_branch(60, theta)
+      }
+
+      function draw_branch(length, theta) {
+
+        line(0, 0, 0, -1 * length)
+        translate(0, -1 * length)
+
+        length *= .6
+
+        if (length > 2) {
+
+          push()
+          rotate(theta)
+          draw_branch(length, theta)
+          pop()
+
+          push()
+          rotate(-1 * theta)
+          draw_branch(length, -1 * theta)
+          pop()
+        }
+      }
+    </script>
+  </head>
+  <body></body>
+</html>
