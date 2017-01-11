@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script type="text/javascript" src="../libs/0.5.5/p5.min.js" async></script>
+    <script type="text/javascript">
+
+      let object
+      let cell
+      let canvas
+      let grid
+
+      class Cell {
+
+        constructor(position, radius) {
+
+          this.radius = radius
+          this.set_position(position)
+        }
+
+        get_position() { return this.position.copy() }
+
+        get_row() { return this.row }
+
+        get_column() { return this.column }
+
+        set_position(position) {
+
+          this.row = parseInt(position.y / (this.radius * 2))
+          this.column = parseInt(position.x / (this.radius * 2))
+          // Cell' core position
+          this.position = createVector(this.column * this.radius * 2 + this.radius, this.row * this.radius * 2 + this.radius)
+        }
+      }
+
+      class Grid {
+
+        constructor(width, height) {
+
+          this.width = width
+          this.height = height
+          this.cell_radius = 10
+          this.cell_quantity = (width / (this.cell_radius * 2)) * (height / (this.cell_radius * 2))
+          this.objects = []
+        }
+
+        get_objects() { return this.objects }
+
+				get_object(i) { return this.objects[i] }
+
+        get_width() { return this.width }
+
+        get_height() { return this.height }
+
+        get_cell_radius() { return this.cell_radius }
+
+        get_cell_quantity() { return this.cell_quantity }
+
+        draw(draw_grid) {
+
+          if (draw_grid) { this.draw_grid() }
+
+          this.draw_objects()
+          this.do_logic()
+        }
+
+        draw_grid() {
+
+          for (let y = this.cell_radius; y < this.height; y += this.cell_radius * 2) {
+
+            for (let x = this.cell_radius; x < this.width; x += this.cell_radius * 2) {
+
+              push()
+              rectMode(RADIUS)
+              translate(x, y)
+              stroke('#BBBBBB')
+              rect(0, 0, this.cell_radius, this.cell_radius)
+              ellipse(0, 0, this.cell_radius * 2)
+              ellipse(0, 0, 1)
+              pop()
+            }
+          }
+        }
+
+        draw_objects() {
+
+	        for (let i = 0; i < this.objects.length; i++) {
+
+            this.objects[i].draw()
+	        }
+        }
+
+        do_logic() {
+
+	        for (let i = 0; i < this.objects.length; i++) {
+
+            let pos
+
+            pos = this.objects[i].get_mover().get_position()
+
+            if (pos.x < 0) { pos.x = this.width }
+            else if (pos.x > this.width) { pos.x = 0 }
+
+            if (pos.y < 0) { pos.y = this.height }
+            else if (pos.y > this.height) { pos.y = 0 }
+
+            this.objects[i].get_mover().set_position(pos)
+            this.objects[i].get_mover().get_cell().set_position(pos)
+            this.objects[i].get_mover().move()
+          }
+        }
+
+        add_object(object) {
+
+          object.get_mover().cell = Grid.get_cell(object, this.cell_radius)
+          this.objects.push(object)
+        }
+
+        rm_object(object) {
+
+          let i = this.objects.indexOf(object)
+          this.objects.splice(i, 1)
+        }
+
+        rm_object_idx(i) { this.objects.splice(i, 1) }
+
+        static get_cell(object, radius) { return new Cell(object.get_mover().get_position(), radius) }
+      }
+
+      class NPC {
+
+        constructor(mover) {
+
+          this.mover = mover
+          this.color = '#00C2FF'
+          this.stroke = '#FFFFFF'
+          this.stroke_weight = 2
+          this.size = 20
+          this.text = {
+            color: '#000000'
+          }
+        }
+
+        get_mover() { return this.mover }
+
+        draw() {
+
+          let pos = this.mover.get_position()
+          let row = this.mover.cell.get_row()
+          let col = this.mover.cell.get_column()
+          let cell_pos = this.mover.cell.get_position()
+
+          push()
+          fill(this.color)
+          stroke(this.stroke)
+          strokeWeight(this.stroke_weight)
+          translate(pos.x, pos.y)
+          // body
+          ellipse(0, 0, this.size)
+          // core
+          ellipse(0, 0, 2)
+          pop()
+
+          this.mover.draw()
+        }
+      }
+
+      class Player {
+
+        constructor(mover) {
+
+          this.mover = mover
+          this.color = '#FF0000'
+          this.stroke = '#FFFFFF'
+          this.stroke_weight = 2
+          this.size = 20
+          this.text = {
+            color: '#000000'
+          }
+        }
+
+        get_mover() { return this.mover }
+
+        draw() {
+
+          let pos = this.mover.get_position()
+          let vel = this.mover.get_velocity()
+          let row = this.mover.cell.get_row()
+          let col = this.mover.cell.get_column()
+          let cell_pos = this.mover.cell.get_position()
+
+          push()
+          fill(this.color)
+          stroke(this.stroke)
+          strokeWeight(this.stroke_weight)
+          translate(pos.x, pos.y)
+          // body
+          ellipse(0, 0, this.size)
+          // core
+          ellipse(0, 0, 2)
+          // head
+          line(0, 0, vel.x, vel.y)
+          pop()
+
+          this.mover.draw()
+        }
+      }
+
+      class Mover {
+
+        constructor(position, velocity) {
+
+          this.position = position.copy()
+          this.velocity = velocity.copy()
+          this.acceleration = createVector(0, 0)
+          this.vision = {
+            distance: 100,
+            angle: Math.PI / 3,
+          }
+          this.mass = 1
+          this.cell = null
+        }
+
+        get_position() { return this.position.copy() }
+
+        get_velocity() { return this.velocity.copy() }
+
+        get_vision() { return this.vision }
+
+        get_cell() { return this.cell }
+
+        set_position(position) { this.position = position.copy() }
+
+        add_force(vector) {
+
+          let f = p5.Vector.div(vector, this.mass)
+          this.acceleration.add(f)
+        }
+
+        move() {
+
+          this.velocity.add(this.acceleration)
+          this.position.add(this.velocity)
+          this.acceleration.mult(0)
+        }
+
+        draw() {
+
+          // debug
+          if (true) {
+            push()
+            translate(this.position.x, this.position.y)
+            text(` Pos: ${(this.position.x).toFixed(2)} ${(this.position.y).toFixed(2)}\n Cell: ${this.cell.get_row()} ${this.cell.get_column()}\n Cell core pos: ${this.cell.get_position().x} ${this.cell.get_position().x}`, 20, 0)
+            pop()
+          }
+        }
+      }
+
+      function setup() {
+
+        canvas = {
+          width: 900,
+          height: 900,
+          offset: {
+            top: 0,
+            right: 200,
+            bottom: 200,
+            left: 0,
+          },
+        }
+
+        grid = new Grid(canvas.width - canvas.offset.right, canvas.height - canvas.offset.bottom)
+        grid.add_object(new Player(new Mover(createVector(255, 460), createVector(.01, .01))))
+        grid.add_object(new NPC(new Mover(createVector(423, 266), createVector(0, 0))))
+
+        for (let i = 0; i < 10; i++) {
+
+          let pos = createVector(parseInt(random(grid.width)), parseInt(random(grid.height)))
+          let vel = createVector(random(-3, 3), random(-3, 3))
+          grid.add_object(new NPC(new Mover(pos, vel)))
+        }
+
+        createCanvas(canvas.width, canvas.height)
+      }
+
+      function draw() {
+
+        background('#FFFFFF')
+
+        draw_coords()
+        grid.draw(true)
+      }
+
+      function draw_coords() {
+
+        if (mouseX > grid.get_width() || mouseY > grid.get_height() || mouseX <= 0 || mouseY <= 0) { return }
+
+        let mouse_cell = new Cell(createVector(mouseX, mouseY), grid.get_cell_radius())
+
+        push()
+        translate(grid.get_width(), grid.get_cell_radius())
+        text(` Mouse pos: ${mouseX} ${mouseY}\n Cell: ${mouse_cell.row} ${mouse_cell.column}\n Cell core pos: ${mouse_cell.position.x} ${mouse_cell.position.y}\n Cell quantity: ${grid.get_cell_quantity()}`, 0, 0)
+        pop()
+      }
+    </script>
+  </head>
+  <body></body>
+</html>
