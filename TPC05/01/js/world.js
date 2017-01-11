@@ -11,13 +11,13 @@ class World {
     this.animals = []
     this.flows = {
 
-      emigration = 8.0,
-      immigration = 7.0
+      emigration: 8.0,
+      immigration: 7.0
     }
 
-    for (let i = 0; i < INITIAL_POPULATION; i++) {
+    for (let i = 0; i < this.INITIAL_POPULATION; i++) {
 
-      let animal = createVector(random(width), random(height)), '#FF0000', 15
+      let animal = new Animal(createVector(random(width), random(height)), '#FF0000', 15)
       animal.velocity = createVector(50, 0)
       this.animals.push(animal)
     }
@@ -29,7 +29,7 @@ class World {
     if (time > this.last_time + this.update_time) {
 
       // TODO add time and total animals to graph
-      console.log(`Time: ${this.time / 1000}; Population: ${this.animals.length};`)
+      console.log(`Time: ${(time / 1000).toFixed(2)}; Population: ${this.animals.length};`)
 
       this.update((time - this.last_time) / 1000)
       this.last_time = time
@@ -38,12 +38,9 @@ class World {
 
   die(delta_time) {
 
-    for (let i = 0; i < this.animals.length; i++) {
+    for (let i = this.animals.length - 1; i >= 0 ; i--) {
 
-      if (animals[i].dying()) {
-
-        this.animals.splice(i, 1)
-      }
+      if (this.animals[i].die(delta_time)) { this.animals.splice(i, 1) }
     }
   }
 
@@ -51,9 +48,9 @@ class World {
 
     for (let i = 0; i < this.animals.length; i++) {
 
-      let child = this.animals[i].reproducing(delta_time)
+      let child = this.animals[i].reproduce(delta_time)
 
-      if (child.is_alive()) {
+      if (child !== undefined && child !== null) {
 
         child.velocity = createVector(random(-10, 10), random(-10, 10))
         this.animals.push(child)
@@ -63,43 +60,40 @@ class World {
 
   emigration(delta_time) {
 
-    if (this.animals.length <= 0) {
+    if (this.animals.length <= 0) { return }
 
-      return
+    let n = parseInt(this.flows.emigration * delta_time)
+    let f = this.flows.emigration * delta_time - n
+
+    for (let i = 0; i < n; i++) {
+
+      let r = parseInt(random(this.animals.length))
+      this.animals.splice(r, 1)
     }
 
-    let n = parseInt(flows.emmigration * delta_time)
-    let f = flows.emmigration * delta_time - n
+    if (random() < f) {
 
-    for (var i = 0; i < n; i++) {
-
-      let r = Math.ceil(random(this.animals.length))
-      this.animals.splice(i, 1)
-    }
-
-    if (random(1) < f) {
-
-      let r = Math.ceil(random(this.animals.length))
-      this.animals.splice(i, 1)
+      let r = parseInt(random(this.animals.length))
+      this.animals.splice(r, 1)
     }
   }
 
   immigration(delta_time) {
 
-    let n = parseInt(flows.immigrationFlow * delta_time)
-    let f = flows.immigration * delta_time - n
+    let n = parseInt(this.flows.immigration * delta_time)
+    let f = this.flows.immigration * delta_time - n
 
     for (var i = 0; i < n; i++) {
 
-      let animal = new Animal(createVector(0, random(height), '#64FF00', 15))
-      animal.velocity = createVector(20, 0)
+      let animal = new Animal(createVector(0, random(height)), '#64FF00', 15)
+      animal.set_velocity(createVector(20, 0))
       this.animals.push(animal)
     }
 
-    if (random(1) < f) {
+    if (random() < f) {
 
-      let animal = new Animal(createVector(0, random(height), '#64FF00', 15))
-      animal.velocity = createVector(20, 0)
+      let animal = new Animal(createVector(0, random(height), '#64FF00'), 15)
+      animal.set_velocity(createVector(20, 0))
       this.animals.push(animal)
     }
   }
@@ -149,12 +143,9 @@ class World {
 
       let death_rate = animal.rate.death.min
 
-      if (this.animals.length > 1) {
+      if (cell.animals.length > 1) { death_rate = animal.rate.death.max }
 
-          death_rate = animal.rate.death.max
-      }
-
-      animal.rate.death.value = .8 * animal.rate.death.value + .2 * death_rate
+      animal.set_death_rate(.8 * animal.rate.death.value + .2 * death_rate)
     }
 
     terrain.reset_animal_lists()
@@ -163,37 +154,69 @@ class World {
 
 class Animal {
 
-  constructor(position, velocity, color, radius) {
+  constructor(position, color, radius) {
 
-    this.position = position
+    this.rate = {
+
+      birth: { value: 0.07 },
+      death: { value: 0.01, min: 0.01, max: 0.2 }
+    }
+
+    this.position = position.copy()
     this.color = color
     this.radius = radius
     this.velocity = createVector(0, 0)
     this.birth_time = millis()
+  }
 
-    // TODO shape
+  draw_shape() {
+
+    fill(this.color);
+    noStroke();
+    beginShape();
+    vertex(-1 * this.radius, this.radius / 2);
+    vertex(this.radius, 0);
+    vertex(-1 * this.radius, -1 * this.radius / 2);
+    vertex(-1 * this.radius / 2, 0);
+    endShape(CLOSE);
+  }
+
+  copy() {
+
+    let animal = new Animal(this.position, this.color, this.radius)
+    animal.set_death_rate(this.rate.death.value)
+    animal.set_birth_rate(this.rate.birth.value)
+  }
+
+  set_death_rate(rate) {
+
+    if (rate < this.rate.death.min && rate > this.rate.death.max) { return }
+
+    this.rate.death.value = rate
+  }
+
+  set_birth_rate(rate) { this.rate.birth.value = rate }
+
+  set_velocity(velocity) { this.velocity = velocity.copy() }
+
+  die(delta_time) {
+
+    return (random() < this.rate.death.value * delta_time)
+  }
+
+  reproduce(delta_time) {
+
+    return (random() < this.rate.birth.value * delta_time) ? this.copy() : null
   }
 
   move(delta_time) {
 
       this.position.add(p5.Vector.mult(this.velocity, delta_time))
 
-      if (this.position.x < 0) {
-
-        this.position.x += width
-      }
-      if (this.position.x > width) {
-
-        this.position.x -= width
-      }
-      if (this.position.y < 0) {
-
-        this.position.y += height
-      }
-      if (this.position > height) {
-
-        this.position.x -= height
-      }
+      if (this.position.x < 0) { this.position.x += width }
+      if (this.position.x > width) { this.position.x -= width }
+      if (this.position.y < 0) { this.position.y += height }
+      if (this.position > height) { this.position.x -= height }
   }
 
   draw() {
@@ -201,7 +224,7 @@ class Animal {
     push()
     translate(this.position.x, this.position.y)
     rotate(this.velocity.heading())
-    // TODO shape
+    this.draw_shape()
     pop()
   }
 }

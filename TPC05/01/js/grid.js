@@ -13,79 +13,85 @@ class Grid {
         this.cells[i][j] = new Cell(i, j, width / n_columns, height / n_rows)
       }
     }
+  }
 
-    update_neighbors() {
+  update_neighbors() {
 
-      for (let i = 0; i < this.cells.length; i++) {
+    for (let i = 0; i < this.cells.length; i++) {
 
-        for (let j = 0; j < this.cells[0].length; j++) {
+      for (let j = 0; j < this.cells[0].length; j++) {
 
-          for (let ii = -1; ii < array.length; ii++) {
+        for (let ii = -1; ii < array.length; ii++) {
 
-            for (let jj = -1; jj < array.length; jj++) {
+          for (let jj = -1; jj < array.length; jj++) {
 
-              let row = (i + ii) % this.cells.length
-              if (row < 0) { row += this.cells.length }
+            let row = (i + ii) % this.cells.length
+            if (row < 0) { row += this.cells.length }
 
-              let columns = (j + jj) % this.cells[0].length
-              if (columns < 0) { column += this.cells[0].length }
+            let columns = (j + jj) % this.cells[0].length
+            if (columns < 0) { column += this.cells[0].length }
 
-              this.cells[i][j].set_neighbors(this.cells[row][column])
-            }
+            this.cells[i][j].set_neighbors(this.cells[row][column])
           }
         }
       }
     }
+  }
 
-    initialize(probability) {
+  initialize(probability) {
 
-      for (let i = 0; i < this.cells.length; i++) {
+    for (let i = 0; i < this.cells.length; i++) {
 
-        for (let j = 0; j < this.cells[0].length; j++) {
+      for (let j = 0; j < this.cells[0].length; j++) {
 
-          if (random(1.) < probability) {
-
-            this.cells[i][j].state = true
-          }
-        }
+        if (random(1.) < probability) { this.cells[i][j].state = true }
       }
     }
+  }
 
-    kill_all() {
+  kill_all() {
 
-      for (let i = 0; i < this.cells.length; i++) {
+    for (let i = 0; i < this.cells.length; i++) {
 
-        for (let j = 0; j < this.cells[0].length; j++) {
+      for (let j = 0; j < this.cells[0].length; j++) {
 
-          this.cells[i][j] = false
-        }
+        this.cells[i][j].set_state(Cell.STATES.DEAD)
       }
     }
+  }
 
-    draw() {
+  draw() {
 
-      for (let i = 0; i < this.cells.length; i++) {
+    for (let i = 0; i < this.cells.length; i++) {
 
-        for (let j = 0; j < this.cells[0].length; j++) {
+      for (let j = 0; j < this.cells[0].length; j++) {
 
-          this.cells[i][j].draw()
-        }
+        this.cells[i][j].draw()
       }
     }
+  }
 
-    get_cell(x, y) {
+  get_cell(x, y) {
 
-      let w = this.canvas_width / this.cells[0].length
-      let h = this.height / this.cells.length
-      let row = (y / h) > this.cells.length ? this.cells.length : y / h
-      let column = (x / w) > this.cells[0].length ? this.cells.length[0] : x / w
+    let w = width / this.cells[0].length
+    let h = height / this.cells.length
+    let row = parseInt(y / h)
+    let column = parseInt(x / w)
 
-      return this.cells[row][column]
-    }
+    if (row >= this.cells.length) { row = this.cells.length - 1 }
+    if (column >= this.cells[0].length) { column = this.cells[0].length - 1 }
 
-    reset_animal_lists() {
+    return this.cells[row][column]
+  }
 
+  reset_animal_lists() {
 
+    for (let i = 0; i < this.cells.length; i++) {
+
+      for (let j = 0; j < this.cells[0].length; j++) {
+
+        this.cells[i][j].reset_animals()
+      }
     }
   }
 }
@@ -96,8 +102,8 @@ class Cell {
 
     this.STATES = {
 
-      ALIVE: { value: 0, color: 192 },
-      DEAD: { value: 1, color: 64 }
+      ALIVE: { value: 0, color: '#A87227' },
+      DEAD: { value: 1, color: '#E76E3F' }
     }
 
     this.row = row
@@ -117,6 +123,8 @@ class Cell {
   set_state(state) { this.state = state }
 
   add_animal(animal) { this.animals.push(animal) }
+
+  add_neighbor(neighbor) { this.neighbors.push(neighbor) }
 
   reset_animals() { this.animals = [] }
 
