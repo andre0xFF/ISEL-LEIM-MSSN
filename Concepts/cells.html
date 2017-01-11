@@ -6,9 +6,6 @@
     <script type="text/javascript" src="../libs/0.5.5/p5.min.js" async></script>
     <script type="text/javascript">
 
-      let object
-      let cell
-      let canvas
       let grid
 
       class Cell {
@@ -40,12 +37,12 @@
 
           this.width = width
           this.height = height
-          this.cell_radius = 10
-          this.cell_quantity = (width / (this.cell_radius * 2)) * (height / (this.cell_radius * 2))
+          this.cell_radius = 12
+          this.cell_quantity = parseInt((width / (this.cell_radius * 2)) * (height / (this.cell_radius * 2)))
           this.objects = []
+          this.obstacles = []
+          this.time = millis()
         }
-
-        get_objects() { return this.objects }
 
 				get_object(i) { return this.objects[i] }
 
@@ -89,26 +86,37 @@
 
             this.objects[i].draw()
 	        }
+
+	        for (let i = 0; i < this.obstacles.length; i++) {
+
+            this.obstacles[i].draw()
+	        }
         }
 
         do_logic() {
 
+          let delta = millis() - this.time
+          this.time = millis()
+
 	        for (let i = 0; i < this.objects.length; i++) {
 
-            let pos
+            this.objects[i].get_mover().move(delta)
 
-            pos = this.objects[i].get_mover().get_position()
+            let pos = this.objects[i].get_mover().get_position()
 
-            if (pos.x < 0) { pos.x = this.width }
-            else if (pos.x > this.width) { pos.x = 0 }
-
-            if (pos.y < 0) { pos.y = this.height }
-            else if (pos.y > this.height) { pos.y = 0 }
+            // toroidal world
+            pos.x = (pos.x + this.width) % this.width;
+            pos.y = (pos.y + this.height) % this.height;
 
             this.objects[i].get_mover().set_position(pos)
             this.objects[i].get_mover().get_cell().set_position(pos)
-            this.objects[i].get_mover().move()
           }
+        }
+
+        add_obstacle(obstacle) {
+
+          obstacle.get_mover().cell = Grid.get_cell(obstacle, this.cell_radius)
+          this.obstacles.push(obstacle)
         }
 
         add_object(object) {
@@ -130,9 +138,9 @@
 
       class NPC {
 
-        constructor(mover) {
+        constructor(position, velocity) {
 
-          this.mover = mover
+          this.mover = new Mover(position, velocity)
           this.color = '#00C2FF'
           this.stroke = '#FFFFFF'
           this.stroke_weight = 2
@@ -147,9 +155,6 @@
         draw() {
 
           let pos = this.mover.get_position()
-          let row = this.mover.cell.get_row()
-          let col = this.mover.cell.get_column()
-          let cell_pos = this.mover.cell.get_position()
 
           push()
           fill(this.color)
@@ -168,9 +173,9 @@
 
       class Player {
 
-        constructor(mover) {
+        constructor(position, velocity) {
 
-          this.mover = mover
+          this.mover = new Mover(position, velocity)
           this.color = '#FF0000'
           this.stroke = '#FFFFFF'
           this.stroke_weight = 2
@@ -186,9 +191,6 @@
 
           let pos = this.mover.get_position()
           let vel = this.mover.get_velocity()
-          let row = this.mover.cell.get_row()
-          let col = this.mover.cell.get_column()
-          let cell_pos = this.mover.cell.get_position()
 
           push()
           fill(this.color)
@@ -214,12 +216,9 @@
           this.position = position.copy()
           this.velocity = velocity.copy()
           this.acceleration = createVector(0, 0)
-          this.vision = {
-            distance: 100,
-            angle: Math.PI / 3,
-          }
           this.mass = 1
           this.cell = null
+          this.eyes = new Eyes(100, Math.PI / 3)
         }
 
         get_position() { return this.position.copy() }
@@ -238,10 +237,10 @@
           this.acceleration.add(f)
         }
 
-        move() {
+        move(delta) {
 
-          this.velocity.add(this.acceleration)
-          this.position.add(this.velocity)
+          this.velocity.add(p5.Vector.mult(this.acceleration, delta))
+          this.position.add(p5.Vector.mult(this.velocity, delta))
           this.acceleration.mult(0)
         }
 
@@ -257,9 +256,47 @@
         }
       }
 
+      class Eyes {
+
+        constructor(distance, angle) {
+
+          this.distance = distance
+          this.angle = angle
+        }
+      }
+
+      class Obstacle {
+
+        constructor(position) {
+
+          this.mover = new Mover(position, createVector(0, 0))
+          this.color = '#444444'
+          this.stroke = '#FFFFFF'
+          this.size = 15
+        }
+
+        draw() {
+
+          let pos = this.mover.get_position()
+
+          push()
+          fill(this.color)
+          stroke(this.stroke)
+          rectMode(RADIUS)
+          translate(pos.x, pos.y)
+          rect(0, 0, this.size, this.size)
+          pop()
+        }
+
+        get_mover() {
+
+          return this.mover
+        }
+      }
+
       function setup() {
 
-        canvas = {
+        let canvas = {
           width: 900,
           height: 900,
           offset: {
@@ -271,15 +308,17 @@
         }
 
         grid = new Grid(canvas.width - canvas.offset.right, canvas.height - canvas.offset.bottom)
-        grid.add_object(new Player(new Mover(createVector(255, 460), createVector(.01, .01))))
-        grid.add_object(new NPC(new Mover(createVector(423, 266), createVector(0, 0))))
+        grid.add_object(new Player(createVector(255, 460), createVector(.01, .01)))
+        grid.add_object(new NPC(createVector(423, 266), createVector(0, 0)))
 
         for (let i = 0; i < 10; i++) {
 
           let pos = createVector(parseInt(random(grid.width)), parseInt(random(grid.height)))
-          let vel = createVector(random(-3, 3), random(-3, 3))
-          grid.add_object(new NPC(new Mover(pos, vel)))
+          let vel = createVector(random(-.1, .1), random(-.1, .1))
+          grid.add_object(new NPC(pos, vel))
         }
+
+        grid.add_obstacle(new Obstacle(createVector(grid.get_width() / 2, grid.get_height() / 2)))
 
         createCanvas(canvas.width, canvas.height)
       }
@@ -287,7 +326,6 @@
       function draw() {
 
         background('#FFFFFF')
-
         draw_coords()
         grid.draw(true)
       }
