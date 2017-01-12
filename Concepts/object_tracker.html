@@ -13,6 +13,7 @@
           this.spacing = grid.get_spacing()
           this.grid_width = grid.get_width()
           this.grid_height = grid.get_height()
+          this.color = '#F000FF'
 
           this.object_position = null
           this.grid_position = null
@@ -20,17 +21,14 @@
           this.set_position(object_position)
         }
 
-        get_object_position() {
-          return this.object_position.copy()
-        }
-        get_grid_coordinates() {
-          return this.grid_coordinates.copy()
-        }
-        get_grid_position() {
-          return this.grid_position.copy()
-        }
-        is_active() {
-          return true
+        get_object_position() { return this.object_position.copy() }
+        get_grid_coordinates() { return this.grid_coordinates.copy() }
+        get_grid_position() { return this.grid_position.copy() }
+        is_active() { return true }
+
+        draw() {
+
+          Grid.draw_grid_square(this.grid_position.x - this.spacing / 2, this.grid_position.y - this.spacing / 2, this.spacing, this.color)
         }
 
         set_position(position) {
@@ -42,7 +40,7 @@
 
         to_string() {
 
-          return `Object pos: ${this.object_position.x.toFixed(0)} ${this.object_position.y.toFixed(0)}\nTracker pos: ${this.grid_position.x} ${this.grid_position.y}\nTracker coords: ${this.grid_coordinates.x} ${this.grid_coordinates.y}`
+          return `Grid pos: ${this.object_position.x.toFixed(0)} ${this.object_position.y.toFixed(0)}\nTracker pos: ${this.grid_position.x} ${this.grid_position.y}\nTracker coords: ${this.grid_coordinates.x} ${this.grid_coordinates.y}`
         }
       }
 
@@ -59,24 +57,12 @@
           this.eyes = new Eyes(100, Math.PI / 3)
         }
 
-        get_position() {
-          return this.position.copy()
-        }
-        get_velocity() {
-          return this.velocity.copy()
-        }
-        get_vision() {
-          return this.vision
-        }
-        get_tracker() {
-          return this.tracker
-        }
-        set_position(position) {
-          this.position = position.copy()
-        }
-        to_string() {
-          return `${this.tracker.to_string()}`
-        }
+        get_position() { return this.position.copy() }
+        get_velocity() { return this.velocity.copy() }
+        get_vision() { return this.vision }
+        get_tracker() { return this.tracker }
+        set_position(position) { this.position = position.copy() }
+        to_string() { return `${this.tracker.to_string()}` }
 
         add_force(vector) {
 
@@ -90,9 +76,7 @@
           this.position.add(p5.Vector.mult(this.velocity, delta))
           this.acceleration.mult(0)
 
-          if (!this.tracker.is_active()) {
-            return
-          }
+          if (!this.tracker.is_active()) { return }
 
           this.tracker.set_position(this.position)
         }
@@ -100,6 +84,7 @@
         draw() {
           // debug
           if (true) {
+            this.tracker.draw()
             push()
             translate(this.position.x, this.position.y)
             text(this.to_string(), 16, 0)
@@ -115,45 +100,26 @@
           this.width = width
           this.height = height
           this.spacing = 24
+          this.color = '#BBBBBB'
           this.cell_quantity = parseInt((width / this.spacing) * (height / this.spacing))
           this.objects = []
           this.obstacles = []
           this.time = millis()
         }
 
-        get_object(i) {
-          return this.objects[i]
-        }
-        get_width() {
-          return this.width
-        }
-        get_height() {
-          return this.height
-        }
-        get_spacing() {
-          return this.spacing
-        }
-        get_cell_quantity() {
-          return this.cell_quantity
-        }
-        add_obstacle(obstacle) {
-          this.obstacles.push(obstacle)
-        }
-        add_object(object) {
-          this.objects.push(object)
-        }
-        rm_object(object) {
-          this.objects.splice(this.objects.indexOf(object), 1)
-        }
-        rm_object_idx(i) {
-          this.objects.splice(i, 1)
-        }
+        get_object(i) { return this.objects[i] }
+        get_width() { return this.width }
+        get_height() { return this.height }
+        get_spacing() { return this.spacing }
+        get_cell_quantity() { return this.cell_quantity }
+        add_obstacle(obstacle) {this.obstacles.push(obstacle) }
+        add_object(object) {this.objects.push(object) }
+        rm_object(object) {this.objects.splice(this.objects.indexOf(object), 1) }
+        rm_object_idx(i) {this.objects.splice(i, 1) }
 
         draw(draw_grid) {
 
-          if (draw_grid) {
-            this.draw_grid()
-          }
+          if (draw_grid) { this.draw_grid() }
 
           this.draw_objects()
           this.draw_obstacles()
@@ -165,16 +131,21 @@
           for (let y = this.spacing / 2; y < this.height; y += this.spacing) {
             for (let x = this.spacing / 2; x < this.width; x += this.spacing) {
 
-              push()
-              rectMode(CENTER)
-              translate(x, y)
-              stroke('#BBBBBB')
-              rect(0, 0, this.spacing, this.spacing)
-              ellipse(0, 0, this.spacing / 2)
-              ellipse(0, 0, 1)
-              pop()
+              Grid.draw_grid_square(x, y, this.spacing, this.color)
             }
           }
+        }
+
+        static draw_grid_square(x, y, spacing, color) {
+
+            push()
+            rectMode(CENTER)
+            translate(x, y)
+            stroke(color)
+            rect(0, 0, spacing, spacing)
+            ellipse(0, 0, spacing / 2)
+            ellipse(0, 0, 1)
+            pop()
         }
 
         draw_objects() {
@@ -203,6 +174,7 @@
             this.objects[i].get_mover().move(delta)
 
             let pos = this.objects[i].get_mover().get_position()
+            let siz = this.objects[i].get_size()
 
             // toroidal world
             pos.x = (pos.x + this.width) % this.width;
@@ -222,18 +194,16 @@
           this.stroke = '#FFFFFF'
           this.stroke_weight = 2
           this.size = 20
-          this.text = {
-            color: '#000000'
-          }
         }
 
-        get_mover() {
-          return this.mover
-        }
+        get_mover() { return this.mover }
+        get_size() { return this.size }
 
         draw() {
 
+          this.mover.draw()
           let pos = this.mover.get_position()
+          let dir = this.mover.get_velocity().normalize().setMag(this.size / 2)
 
           push()
           fill(this.color)
@@ -244,9 +214,11 @@
           ellipse(0, 0, this.size)
           // core
           ellipse(0, 0, 2)
+          // head
+          strokeWeight(this.size / 8)
+          line(0, 0, dir.x, dir.y)
           pop()
 
-          this.mover.draw()
         }
       }
 
@@ -261,14 +233,14 @@
           this.size = 40
         }
 
-        get_mover() {
-          return this.mover
-        }
+        get_mover() { return this.mover }
+        get_size() { return this.size }
 
         draw() {
 
+          this.mover.draw()
           let pos = this.mover.get_position()
-          let vel = this.mover.get_velocity()
+          let dir = this.mover.get_velocity().normalize().setMag(this.size / 2)
 
           push()
           fill(this.color)
@@ -280,10 +252,10 @@
           // core
           ellipse(0, 0, 2)
           // head
-          line(0, 0, vel.x, vel.y)
+          strokeWeight(this.size / 8)
+          line(0, 0, dir.x, dir.y)
           pop()
 
-          this.mover.draw()
         }
       }
 
@@ -306,6 +278,8 @@
           this.size = 15
         }
 
+        get_mover() { return this.mover }
+
         draw() {
 
           let pos = this.mover.get_position()
@@ -319,10 +293,6 @@
           pop()
         }
 
-        get_mover() {
-
-          return this.mover
-        }
       }
 
       let grid
@@ -365,9 +335,7 @@
 
       function draw_cursor() {
 
-        if (mouseX > grid.get_width() || mouseY > grid.get_height() || mouseX <= 0 || mouseY <= 0) {
-          return
-        }
+        if (mouseX > grid.get_width() || mouseY > grid.get_height() || mouseX <= 0 || mouseY <= 0) { return }
 
         let tracker = new Tracker(createVector(mouseX, mouseY), grid)
 
