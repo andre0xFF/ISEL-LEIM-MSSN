@@ -8,11 +8,9 @@
 
       class Tracker {
 
-        constructor(object_position, grid) {
+        constructor(object_position, interval) {
 
-          this.spacing = grid.get_spacing()
-          this.grid_width = grid.get_width()
-          this.grid_height = grid.get_height()
+          this.spacing = interval
           this.color = '#F000FF'
 
           this.object_position = null
@@ -24,7 +22,6 @@
         get_object_position() { return this.object_position.copy() }
         get_grid_coordinates() { return this.grid_coordinates.copy() }
         get_grid_position() { return this.grid_position.copy() }
-        is_active() { return true }
 
         draw() {
 
@@ -46,21 +43,24 @@
 
       class Mover {
 
-        constructor(velocity, tracker) {
+        constructor(position, velocity) {
 
-          this.position = tracker.get_object_position()
+          this.position = position
           this.velocity = velocity.copy()
           this.acceleration = createVector(0, 0)
           this.mass = 1
           this.cell = null
-          this.tracker = tracker
-          this.eyes = new Eyes(100, Math.PI / 3)
+          this.tracker = null
+          this.eyes = null
         }
 
+        // tracker and eyes are optional, thats why they have their own method
+        add_tracker(tracker) { this.tracker = tracker }
+        add_eyes(eyes) { this.eyes = eyes }
         get_position() { return this.position.copy() }
         get_velocity() { return this.velocity.copy() }
-        get_vision() { return this.vision }
         get_tracker() { return this.tracker }
+        get_eyes() { return this.eyes }
         set_position(position) { this.position = position.copy() }
         to_string() { return `${this.tracker.to_string()}` }
 
@@ -76,9 +76,8 @@
           this.position.add(p5.Vector.mult(this.velocity, delta))
           this.acceleration.mult(0)
 
-          if (!this.tracker.is_active()) { return }
-
-          this.tracker.set_position(this.position)
+          if (this.tracker !== null) { this.tracker.set_position(this.position) }
+          if (this.eyes !== null) { }
         }
 
         draw() {
@@ -117,13 +116,20 @@
         rm_object(object) {this.objects.splice(this.objects.indexOf(object), 1) }
         rm_object_idx(i) {this.objects.splice(i, 1) }
 
+        add_objects(objects_array) {
+
+          for (var i = 0; i < objects_array.length; i++) {
+            this.objects.push(objects_array[i])
+          }
+        }
+
         draw(draw_grid) {
 
           if (draw_grid) { this.draw_grid() }
 
+          this.do_logic()
           this.draw_objects()
           this.draw_obstacles()
-          this.do_logic()
         }
 
         draw_grid() {
@@ -218,7 +224,6 @@
           strokeWeight(this.size / 8)
           line(0, 0, dir.x, dir.y)
           pop()
-
         }
       }
 
@@ -314,16 +319,20 @@
 
         grid = new Grid(canvas.width - canvas.offset.right, canvas.height - canvas.offset.bottom)
 
-        grid.add_object(new Player(new Mover(createVector(.01, .01), new Tracker(createVector(255, 460), grid))))
-        grid.add_object(new NPC(new Mover(createVector(0, 0), new Tracker(createVector(423, 266), grid))))
+        grid.add_objects([
+          new Player(generate_mover(createVector(255, 460), createVector(.01, .01))),
+          new NPC(generate_mover(createVector(423, 266), createVector(0, 0))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+        ])
 
-        for (let i = 0; i < 8; i++) {
-
-          let pos = createVector(parseInt(random(grid.width)), parseInt(random(grid.height)))
-          let vel = createVector(random(-.1, .1), random(-.1, .1))
-          grid.add_object(new NPC(new Mover(vel, new Tracker(pos, grid))))
-        }
-        grid.add_obstacle(new Obstacle(new Mover(createVector(0, 0), new Tracker(createVector(grid.get_width() / 2, grid.get_height() / 2), grid))))
+        // grid.add_obstacle(new Obstacle(new Mover(createVector(0, 0), new Tracker(createVector(grid.get_width() / 2, grid.get_height() / 2), grid.get_spacing()))))
       }
 
       function draw() {
@@ -343,6 +352,13 @@
         translate(grid.get_width(), grid.get_spacing() / 2)
         text(`${tracker.to_string()}\nCell quantity: ${grid.get_cell_quantity()}`, 0, 0)
         pop()
+      }
+
+      function generate_mover(position, velocity) {
+
+        let mover = new Mover(position, velocity)
+        mover.add_tracker(new Tracker(position, grid.get_spacing()))
+        return mover
       }
     </script>
   </head>
