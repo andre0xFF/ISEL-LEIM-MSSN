@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script type="text/javascript" src="../libs/0.5.5/p5.min.js" async></script>
+    <script type="text/javascript">
+
+      class Tracker {
+
+        constructor(object_position, interval) {
+
+          this.spacing = interval
+          this.color = '#F000FF'
+
+          this.object_position = null
+          this.grid_position = null
+          this.grid_coordinates = null
+          this.set_position(object_position)
+        }
+
+        get_object_position() { return this.object_position.copy() }
+        get_grid_coordinates() { return this.grid_coordinates.copy() }
+        get_grid_position() { return this.grid_position.copy() }
+
+        draw() {
+
+          Grid.draw_grid_square(this.grid_position.x - this.spacing / 2, this.grid_position.y - this.spacing / 2, this.spacing, this.color)
+        }
+
+        set_position(position) {
+
+          this.object_position = position
+          this.grid_coordinates = createVector(parseInt(position.x / (this.spacing)), parseInt(position.y / (this.spacing)))
+          this.grid_position = createVector(this.grid_coordinates.x * this.spacing + this.spacing, this.grid_coordinates.y * this.spacing + this.spacing)
+        }
+
+        to_string() {
+
+          return `Grid pos: ${this.object_position.x.toFixed(0)} ${this.object_position.y.toFixed(0)}\nTracker pos: ${this.grid_position.x} ${this.grid_position.y}\nTracker coords: ${this.grid_coordinates.x} ${this.grid_coordinates.y}`
+        }
+      }
+
+      class Mover {
+
+        constructor(position, velocity) {
+
+          this.position = position
+          this.velocity = velocity.copy()
+          this.acceleration = createVector(0, 0)
+          this.mass = 1
+          this.cell = null
+          this.tracker = null
+          this.eyes = null
+        }
+
+        // tracker and eyes are optional, thats why they have their own method
+        add_tracker(tracker) { this.tracker = tracker }
+        add_eyes(eyes) { this.eyes = eyes }
+        get_position() { return this.position.copy() }
+        get_velocity() { return this.velocity.copy() }
+        get_tracker() { return this.tracker }
+        get_eyes() { return this.eyes }
+        set_position(position) { this.position = position.copy() }
+        to_string() { return `${this.tracker.to_string()}` }
+
+        add_force(vector) {
+
+          let f = p5.Vector.div(vector, this.mass)
+          this.acceleration.add(f)
+        }
+
+        move(delta) {
+
+          this.velocity.add(p5.Vector.mult(this.acceleration, delta))
+          this.position.add(p5.Vector.mult(this.velocity, delta))
+          this.acceleration.mult(0)
+
+          if (this.tracker !== null) { this.tracker.set_position(this.position) }
+          if (this.eyes !== null) { }
+        }
+
+        draw() {
+          // debug
+          if (true) {
+            this.tracker.draw()
+            push()
+            translate(this.position.x, this.position.y)
+            text(this.to_string(), 16, 0)
+            pop()
+          }
+        }
+      }
+
+      class Grid {
+
+        constructor(width, height) {
+
+          this.width = width
+          this.height = height
+          this.spacing = 24
+          this.color = '#BBBBBB'
+          this.cell_quantity = parseInt((width / this.spacing) * (height / this.spacing))
+          this.objects = []
+          this.obstacles = []
+          this.time = millis()
+        }
+
+        get_object(i) { return this.objects[i] }
+        get_width() { return this.width }
+        get_height() { return this.height }
+        get_spacing() { return this.spacing }
+        get_cell_quantity() { return this.cell_quantity }
+        add_obstacle(obstacle) {this.obstacles.push(obstacle) }
+        add_object(object) {this.objects.push(object) }
+        rm_object(object) {this.objects.splice(this.objects.indexOf(object), 1) }
+        rm_object_idx(i) {this.objects.splice(i, 1) }
+
+        add_objects(objects_array) {
+
+          for (var i = 0; i < objects_array.length; i++) {
+            this.objects.push(objects_array[i])
+          }
+        }
+
+        draw(draw_grid) {
+
+          if (draw_grid) { this.draw_grid() }
+
+          this.do_logic()
+          this.draw_objects()
+          this.draw_obstacles()
+        }
+
+        draw_grid() {
+
+          for (let y = this.spacing / 2; y < this.height; y += this.spacing) {
+            for (let x = this.spacing / 2; x < this.width; x += this.spacing) {
+
+              Grid.draw_grid_square(x, y, this.spacing, this.color)
+            }
+          }
+        }
+
+        static draw_grid_square(x, y, spacing, color) {
+
+            push()
+            rectMode(CENTER)
+            translate(x, y)
+            stroke(color)
+            rect(0, 0, spacing, spacing)
+            ellipse(0, 0, spacing / 2)
+            ellipse(0, 0, 1)
+            pop()
+        }
+
+        draw_objects() {
+
+          for (let i = 0; i < this.objects.length; i++) {
+
+            this.objects[i].draw()
+          }
+        }
+
+        draw_obstacles() {
+
+          for (let i = 0; i < this.obstacles.length; i++) {
+
+            this.obstacles[i].draw()
+          }
+        }
+
+        do_logic() {
+
+          let delta = millis() - this.time
+          this.time = millis()
+
+          for (let i = 0; i < this.objects.length; i++) {
+
+            this.objects[i].get_mover().move(delta)
+
+            let pos = this.objects[i].get_mover().get_position()
+            let siz = this.objects[i].get_size()
+
+            // toroidal world
+            pos.x = (pos.x + this.width) % this.width;
+            pos.y = (pos.y + this.height) % this.height;
+
+            this.objects[i].get_mover().set_position(pos)
+          }
+        }
+      }
+
+      class NPC {
+
+        constructor(mover) {
+
+          this.mover = mover
+          this.color = '#00C2FF'
+          this.stroke = '#FFFFFF'
+          this.stroke_weight = 2
+          this.size = 20
+        }
+
+        get_mover() { return this.mover }
+        get_size() { return this.size }
+
+        draw() {
+
+          this.mover.draw()
+          let pos = this.mover.get_position()
+          let dir = this.mover.get_velocity().normalize().setMag(this.size / 2)
+
+          push()
+          fill(this.color)
+          stroke(this.stroke)
+          strokeWeight(this.stroke_weight)
+          translate(pos.x, pos.y)
+          // body
+          ellipse(0, 0, this.size)
+          // core
+          ellipse(0, 0, 2)
+          // head
+          strokeWeight(this.size / 8)
+          line(0, 0, dir.x, dir.y)
+          pop()
+        }
+      }
+
+      class Player {
+
+        constructor(mover) {
+
+          this.mover = mover
+          this.color = '#FF0000'
+          this.stroke = '#FFFFFF'
+          this.stroke_weight = 2
+          this.size = 40
+        }
+
+        get_mover() { return this.mover }
+        get_size() { return this.size }
+
+        draw() {
+
+          this.mover.draw()
+          let pos = this.mover.get_position()
+          let dir = this.mover.get_velocity().normalize().setMag(this.size / 2)
+
+          push()
+          fill(this.color)
+          stroke(this.stroke)
+          strokeWeight(this.stroke_weight)
+          translate(pos.x, pos.y)
+          // body
+          ellipse(0, 0, this.size)
+          // core
+          ellipse(0, 0, 2)
+          // head
+          strokeWeight(this.size / 8)
+          line(0, 0, dir.x, dir.y)
+          pop()
+
+        }
+      }
+
+      class Eyes {
+
+        constructor(distance, angle) {
+
+          this.distance = distance
+          this.angle = angle
+        }
+      }
+
+      class Obstacle {
+
+        constructor(mover) {
+
+          this.mover = mover
+          this.color = '#444444'
+          this.stroke = '#FFFFFF'
+          this.size = 15
+        }
+
+        get_mover() { return this.mover }
+
+        draw() {
+
+          let pos = this.mover.get_position()
+
+          push()
+          fill(this.color)
+          stroke(this.stroke)
+          rectMode(RADIUS)
+          translate(pos.x, pos.y)
+          rect(0, 0, this.size, this.size)
+          pop()
+        }
+
+      }
+
+      let grid
+
+      function setup() {
+
+        let canvas = {
+          width: 900,
+          height: 900,
+          offset: {
+            top: 0,
+            right: 200,
+            bottom: 200,
+            left: 0
+          }
+        }
+
+        createCanvas(canvas.width, canvas.height)
+
+        grid = new Grid(canvas.width - canvas.offset.right, canvas.height - canvas.offset.bottom)
+
+        grid.add_objects([
+          new Player(generate_mover(createVector(255, 460), createVector(.01, .01))),
+          new NPC(generate_mover(createVector(423, 266), createVector(0, 0))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+          new NPC(generate_mover(createVector(random(width), random(height)), createVector(random(-.1, .1), random(-.1, .1)))),
+        ])
+
+        // grid.add_obstacle(new Obstacle(new Mover(createVector(0, 0), new Tracker(createVector(grid.get_width() / 2, grid.get_height() / 2), grid.get_spacing()))))
+      }
+
+      function draw() {
+
+        background('#FFFFFF')
+        grid.draw(true)
+        draw_cursor()
+      }
+
+      function draw_cursor() {
+
+        if (mouseX > grid.get_width() || mouseY > grid.get_height() || mouseX <= 0 || mouseY <= 0) { return }
+
+        let tracker = new Tracker(createVector(mouseX, mouseY), grid)
+
+        push()
+        translate(grid.get_width(), grid.get_spacing() / 2)
+        text(`${tracker.to_string()}\nCell quantity: ${grid.get_cell_quantity()}`, 0, 0)
+        pop()
+      }
+
+      function generate_mover(position, velocity) {
+
+        let mover = new Mover(position, velocity)
+        mover.add_tracker(new Tracker(position, grid.get_spacing()))
+        return mover
+      }
+    </script>
+  </head>
+  <body></body>
+</html>

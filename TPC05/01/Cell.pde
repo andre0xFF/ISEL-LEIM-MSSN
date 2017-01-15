@@ -1,3 +1,4 @@
+// This code is not of my authority. It was provided to develop the rest of the website
 class Cell
 {
   int line, col;

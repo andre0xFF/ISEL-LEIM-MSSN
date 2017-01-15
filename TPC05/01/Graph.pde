@@ -1,4 +1,5 @@
-import grafica.*; 
+// This code is not of my authority. It was provided to develop the rest of the website
+import grafica.*;
 
 class Graph
 {
@@ -7,15 +8,15 @@ class Graph
   color colour;
   float init_tmax, tmax;
   float ymin, ymax;
-  
-  Graph(PApplet p, PVector pos, PVector dim, float tmax, 
+
+  Graph(PApplet p, PVector pos, PVector dim, float tmax,
         float ymin, float ymax, String title, String xlabel, String ylabel)
   {
     plot = new GPlot(p);
     points = new GPointsArray();
-    
+
     setColor(color(random(255), random(255), random(255)));
-  
+
     this.init_tmax = tmax;
     this.tmax = tmax;
     this.ymin = ymin;
@@ -29,24 +30,24 @@ class Graph
     plot.getYAxis().getAxisLabel().setText(ylabel);
     plot.setVerticalAxesNTicks(2);
   }
-  
+
   void setColor(color c)
   {
     colour = c;
   }
-  
+
   void add(float t, float y)
   {
     points.add(t,y);
-    
+
     if (y > ymax) {
       float aux = ymax;
       ymax += ymax-ymin;
       ymin = aux;
       plot.setYLim(ymin, ymax);
     }
-    
-    if (t > tmax) 
+
+    if (t > tmax)
       {
         float[] xlim = new float[2];
         xlim[0] = tmax;
@@ -55,9 +56,9 @@ class Graph
         plot.setXLim(xlim);
       }
   }
-    
+
   void display()
-  {   
+  {
     plot.beginDraw();
     plot.drawBackground();
     plot.drawBox();

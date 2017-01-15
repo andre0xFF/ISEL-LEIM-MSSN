@@ -1,9 +1,10 @@
-class Terrain
+// This code is not of my authority. It was provided to develop the rest of the website
+class Grid2D
 {
   int nrows, ncols;
   Cell[][] cells;
 
-  Terrain(int nrows, int ncols)
+  Grid2D(int nrows, int ncols)
   {
     this.nrows = nrows;
     this.ncols = ncols;
@@ -32,7 +33,7 @@ class Terrain
               if (row < 0) row += nrows;
               int col = (j + jj) % ncols;
               if (col < 0) col += ncols;
-              cells[i][j].setNeighbors(cells[row][col]);
+              cells[i][j].setNeighbor(cells[row][col]);
             }
           }
         }
@@ -44,10 +45,29 @@ class Terrain
   {
     for (int i = 0; i < nrows; i++) {
       for (int j = 0; j < ncols; j++) {
-        if (random(1.) < p) cells[i][j].state = 1;
+        if (random(1.) < p) cells[i][j].setAlive();
       }
     }
   }
+
+  void setBlank()
+  {
+    for (int i = 0; i < nrows; i++) {
+      for (int j = 0; j < ncols; j++) {
+        cells[i][j].reset();
+      }
+    }
+  }
+
+  void resetAnimalLists()
+  {
+    for (int i = 0; i < nrows; i++) {
+      for (int j = 0; j < ncols; j++) {
+        cells[i][j].resetAnimalList();
+      }
+    }
+  }
+
 
   Cell getCell(int x, int y)
   {
