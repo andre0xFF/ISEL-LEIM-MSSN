@@ -8,14 +8,15 @@ class World
   int lastTime;
   int updateTime = 150;
   int iniPopulation = 50;
-  float immigrationFlow = 7.00;   // per second
-  float emigrationFlow = 8.00;    // per second
+  float immigrationFlow = 1.00;   // per second
+  float emigrationFlow = 1.00;    // per second
   int emigrated = 0;
   int immigrated = 0;
   int born = 0;
   int died = 0;
   float elapsed_time = 0;
   float average_death_rate = 0;
+  float average_birth_rate = 0;
 
   World(PApplet p, int nrows, int ncols)
   {
@@ -46,8 +47,8 @@ class World
       if (this.elapsed_time >= 30) {
         this.elapsed_time = 0;
         println(
-          ((int)millis()/1000.) +
-          ",0.07" + "," +
+          ((int)millis()/1000.) + "," +
+          this.average_birth_rate + "," +
           this.emigrationFlow + "," +
           this.average_death_rate + "," +
           immigrationFlow + "," +
@@ -101,6 +102,13 @@ class World
       a.deathRate = 0.8*a.deathRate + 0.2*val;
     }
     terrain.resetAnimalLists();
+
+    //
+    for (Animal a : animals) {
+      a.birthRate = (float)(0.08+(-1 * 2.14 * Math.pow(10, -9) * Math.pow(animals.size(), 2) + 7.529 * Math.pow(10, -5) * animals.size() + 0.087) * 0.75);
+      this.average_birth_rate += a.birthRate;
+    }
+    this.average_birth_rate /= animals.size();
   }
 
   void die(float dt)
