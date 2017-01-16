@@ -1,3 +1,4 @@
+// This code is not of my authority.
 class Prey extends Animal
 {
   Prey(PVector pos, color c, float radius)
@@ -20,7 +21,7 @@ class Prey extends Animal
     }
     return child;
   }
-  
+
   void eat(Terrain terrain, ArrayList<Animal> animals)
   {
     Cell c = terrain.getCell((int)pos.x, (int)pos.y);

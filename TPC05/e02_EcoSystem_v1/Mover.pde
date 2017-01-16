@@ -1,10 +1,11 @@
+// This code is not of my authority.
 class Mover
 {
   PVector pos, vel, acc;
   color c;
   float radius;
   float mass;
-  
+
   Mover(PVector pos, color c, float radius, float mass)
   {
     this.pos = pos.copy();
@@ -14,12 +15,12 @@ class Mover
     vel = new PVector();
     acc = new PVector();
   }
-  
+
   void applyForce(PVector force)
   {
     acc.add(PVector.div(force, mass));
   }
-  
+
   void move(float dt)
   {
     vel.add(acc.mult(dt));
@@ -27,15 +28,15 @@ class Mover
     acc.mult(0);
     toroidalWorld();
   }
- 
+
   void toroidalWorld()
   {
     if (pos.x < 0) pos.x = pos.x += width;
     if (pos.x > width) pos.x -= width;
     if (pos.y < 0) pos.y += height;
-    if (pos.y > height) pos.y -= height;   
+    if (pos.y > height) pos.y -= height;
   }
-  
+
   void boxWorld()
   {
     if (pos.x < 0) {pos.x = -pos.x; vel.x *= -1;}
@@ -43,7 +44,7 @@ class Mover
     if (pos.y < 0) {pos.y = -pos.y; vel.y *= -1;}
     if (pos.y > height) {pos.y = 2*height-pos.y; vel.y *= -1;}
   }
-  
+
   void display()
   {
     pushStyle();

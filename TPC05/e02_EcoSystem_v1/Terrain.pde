@@ -1,3 +1,4 @@
+// This code is not of my authority.
 class Terrain
 {
   int nrows, ncols;
@@ -68,7 +69,7 @@ class Terrain
       c.animals.add(a);
     }
   }
-  
+
   void clearAnimalLists()
   {
     for (int i = 0; i < nrows; i++) {

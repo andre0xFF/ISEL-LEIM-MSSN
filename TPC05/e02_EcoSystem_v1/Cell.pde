@@ -1,3 +1,4 @@
+// This code is not of my authority.
 enum State {DESERT, FERTILE, FOOD}
 
 class Cell
@@ -22,29 +23,29 @@ class Cell
     neighbors = new ArrayList<Cell>();
     animals = new ArrayList<Animal>();
   }
-  
+
   void setNeighbors(Cell c)
   {
     neighbors.add(c);
   }
-  
+
   void setFertile()
   {
     state = State.FERTILE;
     eatenTime = millis();
   }
-  
+
   void regenerate()
   {
     if ((state == State.FERTILE) && (millis() > eatenTime + timeToGrow)) {
       state = State.FOOD;
     }
   }
-  
+
   void display()
   {
     pushStyle();
-    fill(colors[state.ordinal()]);   
+    fill(colors[state.ordinal()]);
     rect(col*w, line*h, w, h);
     popStyle();
   }

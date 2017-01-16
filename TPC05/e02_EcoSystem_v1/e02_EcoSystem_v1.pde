@@ -1,6 +1,8 @@
 // Terrain
+// Probability of a cell to become fertile when the terrain is initiated
 final float DENSITY = 0.4;
-final float[] REGENERATION_TIME = {2., 4.};    // seconds
+// Time interval (in seconds) for how long it will take a fertile cell to regenerate
+final float[] REGENERATION_TIME = {2., 4.};
 
 // Global Population
 final float IMMIGRATION_FLOW = 0.1;

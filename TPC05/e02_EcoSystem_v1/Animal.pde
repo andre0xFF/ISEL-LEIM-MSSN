@@ -1,3 +1,4 @@
+// This code is not of my authority.
 class Animal extends Mover
 {
   PShape shape;
@@ -44,12 +45,12 @@ class Animal extends Mover
   {
     return (max*min/(min+(max-min)*exp(-r*energy)));
   }
-  
+
   Animal reproduce(float dt)
   {
     return null;
   }
-  
+
   void eat(Terrain terrain, ArrayList<Animal> animals)
   {
   }

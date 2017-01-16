@@ -1,4 +1,5 @@
-import grafica.*; 
+// This code is not of my authority.
+import grafica.*;
 
 class Graph
 {
@@ -8,19 +9,19 @@ class Graph
   float init_tmax, tmax;
   float ymin, ymax;
   int numLines;
-  
-  Graph(int numLines, PApplet p, PVector pos, PVector dim, float tmax, 
+
+  Graph(int numLines, PApplet p, PVector pos, PVector dim, float tmax,
         float ymin, float ymax, String title, String xlabel, String ylabel)
   {
     plot = new GPlot(p);
     points = new GPointsArray[numLines];
     colour = new color[numLines];
-    
+
     for(int i=0;i<numLines;i++) {
       points[i] = new GPointsArray();
       setColor(i, color(random(255), random(255), random(255)));
     }
-    
+
     this.init_tmax = tmax;
     this.tmax = tmax;
     this.ymin = ymin;
@@ -35,24 +36,24 @@ class Graph
     plot.getYAxis().getAxisLabel().setText(ylabel);
     plot.setVerticalAxesNTicks(2);
   }
-  
+
   void setColor(int n, color c)
   {
     colour[n] = c;
   }
-  
+
   void add(int n, float t, float y)
   {
     points[n].add(t,y);
-    
+
     //if (y > ymax) {
     //  float aux = ymax;
     //  ymax += ymax-ymin;
     //  ymin = aux;
     //  plot.setYLim(ymin, ymax);
     //}
-    
-    if (t > tmax) 
+
+    if (t > tmax)
       {
         float[] xlim = new float[2];
         xlim[0] = tmax;
@@ -61,9 +62,9 @@ class Graph
         plot.setXLim(xlim);
       }
   }
-    
+
   void display()
-  {   
+  {
     plot.beginDraw();
     plot.drawBackground();
     plot.drawBox();

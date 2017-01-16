@@ -1,3 +1,4 @@
+// This code is not of my authority.
 class Predator extends Animal
 {
   Predator(PVector pos, color c, float radius)

@@ -1,3 +1,4 @@
+// This code is not of my authority.
 class Population
 {
   ArrayList<Animal> animals;
@@ -38,7 +39,7 @@ class Population
   {
     for (Animal a : animals) a.move(dt);
   }
-  
+
   void eat(Terrain terrain, ArrayList<Animal> animals)
   {
     for (int i=animals.size()-1;i>=0;i--) {
@@ -69,7 +70,7 @@ class Population
   }
 
   void emigration(float dt)
-  { 
+  {
     int listSize = animals.size();
     if (listSize == 0) return;
 
@@ -114,7 +115,7 @@ class Population
     a.energy = 40;
     return a;
   }
-  
+
   void countAnimals()
   {
     numberOfPreys = 0;
@@ -124,7 +125,7 @@ class Population
       else numberOfPredators++;
     }
   }
-  
+
   void display()
   {
     for (Animal a : animals) a.display();
