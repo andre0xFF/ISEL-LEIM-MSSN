@@ -8,6 +8,7 @@ class World
 
   int lastTime;
   int updateTime = 150;
+  float elapsed_time = 0;
 
   World(PApplet p, int nrows, int ncols)
   {
@@ -30,9 +31,13 @@ class World
       lastTime = millis();
       graph.add(0, millis()/1000., population.numberOfPreys);
       graph.add(1, millis()/1000., population.numberOfPredators);
-      println("time = " + millis()/1000.);
-      println("preys | predators = " + population.numberOfPreys + " , " + population.numberOfPredators);
       update(dt);
+
+      this.elapsed_time += dt;
+      if (this.elapsed_time >= 8) {
+        this.elapsed_time = 0;
+        println(millis()/1000. + "," + population.numberOfPreys + "," + population.numberOfPredators + "," + this.terrain.count_food);
+      }
     }
   }
 

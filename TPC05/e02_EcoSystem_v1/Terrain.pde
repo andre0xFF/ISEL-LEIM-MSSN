@@ -3,6 +3,7 @@ class Terrain
 {
   int nrows, ncols;
   Cell[][] cells;
+  int count_food = 0;
 
   Terrain(int nrows, int ncols)
   {
@@ -55,9 +56,15 @@ class Terrain
 
   void regenerate()
   {
+    this.count_food = 0;
+    
     for (int i = 0; i < nrows; i++) {
       for (int j = 0; j < ncols; j++) {
         cells[i][j].regenerate();
+
+        if (cells[i][j].state == State.FOOD) {
+          this.count_food++;
+        }
       }
     }
   }
