@@ -1,4 +1,4 @@
-// This code is not of my authority. It was provided to develop the rest of the website
+// This code is not of my authority.
 class Animal
 {
   PVector pos, vel;
@@ -6,7 +6,7 @@ class Animal
   color c;
   float radius;
   int birth;
-  float birthRate = 0.07;     // per second
+  float birthRate = 0.08;     // per second
   float deathRate;            // per second
   float minDeathRate = 0.01;  // per second
   float maxDeathRate = 0.2;   // per second

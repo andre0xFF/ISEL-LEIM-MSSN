@@ -1,26 +1,32 @@
-// This code is not of my authority. It was provided to develop the rest of the website
+// This code is not of my authority.
 import grafica.*;
 
 class Graph
 {
   GPlot plot;
-  GPointsArray points;
-  color colour;
+  GPointsArray[] points;
+  color[] colour;
   float init_tmax, tmax;
   float ymin, ymax;
+  int numLines;
 
-  Graph(PApplet p, PVector pos, PVector dim, float tmax,
+  Graph(int numLines, PApplet p, PVector pos, PVector dim, float tmax,
         float ymin, float ymax, String title, String xlabel, String ylabel)
   {
     plot = new GPlot(p);
-    points = new GPointsArray();
+    points = new GPointsArray[numLines];
+    colour = new color[numLines];
 
-    setColor(color(random(255), random(255), random(255)));
+    for(int i=0;i<numLines;i++) {
+      points[i] = new GPointsArray();
+      setColor(i, color(random(255), random(255), random(255)));
+    }
 
     this.init_tmax = tmax;
     this.tmax = tmax;
     this.ymin = ymin;
     this.ymax = ymax;
+    this.numLines = numLines;
     plot.setPos(pos.x, pos.y);
     plot.setDim(dim.x, dim.y);
     plot.setXLim(0, tmax);
@@ -31,21 +37,21 @@ class Graph
     plot.setVerticalAxesNTicks(2);
   }
 
-  void setColor(color c)
+  void setColor(int n, color c)
   {
-    colour = c;
+    colour[n] = c;
   }
 
-  void add(float t, float y)
+  void add(int n, float t, float y)
   {
-    points.add(t,y);
+    points[n].add(t,y);
 
-    if (y > ymax) {
-      float aux = ymax;
-      ymax += ymax-ymin;
-      ymin = aux;
-      plot.setYLim(ymin, ymax);
-    }
+    //if (y > ymax) {
+    //  float aux = ymax;
+    //  ymax += ymax-ymin;
+    //  ymin = aux;
+    //  plot.setYLim(ymin, ymax);
+    //}
 
     if (t > tmax)
       {
@@ -65,9 +71,11 @@ class Graph
     plot.drawXAxis();
     plot.drawYAxis();
     plot.drawTitle();
-    plot.setPoints(points);
-    plot.setLineColor(colour);
-    plot.drawLines();
+    for(int i=0;i<numLines;i++) {
+      plot.setPoints(points[i]);
+      plot.setLineColor(colour[i]);
+      plot.drawLines();
+    }
     plot.endDraw();
   }
 }

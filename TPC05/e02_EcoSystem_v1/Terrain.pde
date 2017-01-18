@@ -1,10 +1,11 @@
-// This code is not of my authority. It was provided to develop the rest of the website
-class Grid2D
+// This code is not of my authority.
+class Terrain
 {
   int nrows, ncols;
   Cell[][] cells;
+  int count_food = 0;
 
-  Grid2D(int nrows, int ncols)
+  Terrain(int nrows, int ncols)
   {
     this.nrows = nrows;
     this.ncols = ncols;
@@ -15,9 +16,12 @@ class Grid2D
 
   void createCells()
   {
+    int minRT = (int)(REGENERATION_TIME[0] * 1000);
+    int maxRT = (int)(REGENERATION_TIME[1] * 1000.);
     for (int i = 0; i < nrows; i++) {
       for (int j = 0; j < ncols; j++) {
-        cells[i][j] = new Cell(i, j, width/ncols, height/nrows);
+        int timeToGrow = (int)random(minRT, maxRT);
+        cells[i][j] = new Cell(i, j, width/ncols, height/nrows, timeToGrow);
       }
     }
   }
@@ -33,7 +37,7 @@ class Grid2D
               if (row < 0) row += nrows;
               int col = (j + jj) % ncols;
               if (col < 0) col += ncols;
-              cells[i][j].setNeighbor(cells[row][col]);
+              cells[i][j].setNeighbors(cells[row][col]);
             }
           }
         }
@@ -45,29 +49,42 @@ class Grid2D
   {
     for (int i = 0; i < nrows; i++) {
       for (int j = 0; j < ncols; j++) {
-        if (random(1.) < p) cells[i][j].setAlive();
+        if (random(1.) < p) cells[i][j].setFertile();
       }
     }
   }
 
-  void setBlank()
+  void regenerate()
+  {
+    this.count_food = 0;
+    
+    for (int i = 0; i < nrows; i++) {
+      for (int j = 0; j < ncols; j++) {
+        cells[i][j].regenerate();
+
+        if (cells[i][j].state == State.FOOD) {
+          this.count_food++;
+        }
+      }
+    }
+  }
+
+  void setAnimalLists(ArrayList<Animal> animals)
+  {
+    for (Animal a : animals) {
+      Cell c = getCell((int)a.pos.x, (int)a.pos.y);
+      c.animals.add(a);
+    }
+  }
+
+  void clearAnimalLists()
   {
     for (int i = 0; i < nrows; i++) {
       for (int j = 0; j < ncols; j++) {
-        cells[i][j].reset();
+        cells[i][j].animals.clear();
       }
     }
   }
-
-  void resetAnimalLists()
-  {
-    for (int i = 0; i < nrows; i++) {
-      for (int j = 0; j < ncols; j++) {
-        cells[i][j].resetAnimalList();
-      }
-    }
-  }
-
 
   Cell getCell(int x, int y)
   {
