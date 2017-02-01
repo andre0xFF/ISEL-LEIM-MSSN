@@ -1,15 +1,12 @@
 class RBC {
 
-  constructor() {
-    this.mover = new Mover(createVector(random(0, 800), random(0, 800)), createVector(0, 0))
+  constructor(position) {
+    this.mover = new Mover(position, createVector(0, 0))
     this.view = new RBC_view()
   }
 
-  get_mover() { return this.mover }
-  get_view() { return this.view }
-
-  move(delta) {
-    this.mover.move(delta)
+  move() {
+    this.mover.move()
   }
 
   draw() {
@@ -19,31 +16,31 @@ class RBC {
 
 class WBC {
 
-  constructor() {
-    this.mover = new Mover(createVector(random(0, 800), random(0, 800)), createVector(random(-5, 5), random(-5, 5)))
+  constructor(position) {
+    this.mover = new Mover(position, createVector(random(-5, 5), random(-5, 5)))
+    this.boid = new Boid(this.mover.get_position(), this.mover.get_velocity(), 100)
     this.view = new WBC_view()
   }
 
-  get_mover() { return this.mover }
-  get_view() { return this.view }
-
-  move(delta) {
-    this.mover.move(delta)
+  move() {
+    this.mover.move()
+    this.boid.update(this.mover.get_position(), this.mover.get_velocity())
   }
 
   draw() {
     this.view.draw(this.mover.get_position())
   }
+  replicate() {
+    return new WBC(this.mover.get_position())
+  }
 }
 
 class CHO {
 
-  constructor() {
-    this.mover = new Mover(createVector(random(0, 800), random(0, 800)), createVector(0, 0))
+  constructor(position) {
+    this.mover = new Mover((position), createVector(0, 0))
     this.view = new CHO_view()
   }
-
-  get_view() { return this.view }
 
   draw() {
     this.view.draw(this.mover.get_position())
@@ -52,19 +49,21 @@ class CHO {
 
 class Virus {
 
-  constructor() {
-    this.mover = new Mover(createVector(random(0, 800), random(0, 800)), createVector(random(-5, 5), random(-5, 5)))
+  constructor(position) {
+    this.mover = new Mover(position, createVector(random(-5, 5), random(-5, 5)))
+    this.boid = new Boid(this.mover.get_position(), this.mover.get_velocity(), 100)
     this.view = new Virus_view()
   }
 
-  get_mover() { return this.mover }
-  get_view() { return this.view }
-
-  move(delta) {
-    this.mover.move(delta)
+  move() {
+    this.mover.move()
+    this.boid.update(this.mover.get_position(), this.mover.get_velocity())
   }
 
   draw() {
-    this.view.draw(this.mover.get_position())
+    this.view.draw(this.mover.get_position(), this.mover.get_direction())
+  }
+  replicate() {
+    return new Virus(this.mover.get_position())
   }
 }

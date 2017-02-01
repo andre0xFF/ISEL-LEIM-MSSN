@@ -2,11 +2,12 @@ class CHO_view {
 
   constructor() {
     this.view_model = CHO_view.generate()
-    this.size = 20
+    this.size = 16
   }
 
+  set_size(percentage) { this.size = percentage * 16 }
+
   draw(position) {
-    this.position = position.copy()
     this.view_model.draw(position, this.size)
   }
 
@@ -23,20 +24,19 @@ class CHO_view {
 class CHO_view_model_01 {
 
   constructor() {
-    this.color = '#F57F17'
+    this.color = '#FFEB3B'
+    this.t = Math.round(random(-1, 1))
   }
 
   draw(position, size) {
     push()
     {
-      translate(position.x, position.y)
       fill(this.color)
       noStroke()
-      rectMode(CENTER)
-      rect(0 - (size / 2 - 3), 0 - (size / 2 - 3), size / 2, size / 2)
-      rect(0 - (size / 2 - 3), 0 + (size / 2 - 3), size / 4, size / 4)
-      rect(0 + (size / 2 - 3), 0 - (size / 2 - 3), size / 4, size / 4)
-      rect(0 + (size / 2 - 3), 0 + (size / 2 - 3), size / 2, size / 2)
+      ellipseMode(CENTER)
+      translate(position.x, position.y)
+      ellipse(this.t * (size / 4), -this.t * (size / 4), size / 2, size / 2)
+      ellipse(-this.t * (size / 4), this.t * (size / 4), size / 4, size / 4)
     }
     pop()
   }
@@ -45,7 +45,7 @@ class CHO_view_model_01 {
 class CHO_view_model_02 {
 
   constructor() {
-    this.color = '#F57F17'
+    this.color = '#FFEB3B'
   }
 
   draw(position, size) {
@@ -54,11 +54,11 @@ class CHO_view_model_02 {
       translate(position.x, position.y)
       fill(this.color)
       noStroke()
-      rectMode(CENTER)
-      rect(0 - (size / 2 - 3), 0 - (size / 2 - 3), size / 4, size / 4)
-      rect(0 - (size / 2 - 3), 0 + (size / 2 - 3), size / 2, size / 2)
-      rect(0 + (size / 2 - 3), 0 - (size / 2 - 3), size / 2, size / 2)
-      rect(0 + (size / 2 - 3), 0 + (size / 2 - 3), size / 4, size / 4)
+      ellipseMode(CENTER)
+      ellipse(- (size / 4), - (size / 4), size / 4, size / 4)
+      ellipse(- (size / 4), + (size / 4), size / 2, size / 2)
+      ellipse(+ (size / 4), - (size / 4), size / 2, size / 2)
+      ellipse(+ (size / 4), + (size / 4), size / 4, size / 4)
     }
     pop()
   }

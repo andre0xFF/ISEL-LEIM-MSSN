@@ -2,15 +2,13 @@ class Virus_view {
 
   constructor() {
     this.view_model = Virus_view.generate()
-    this.size = random(5, 20)
+    this.size = 12
   }
 
-  increase_size() { this.size++ }
-  decrease_size() { this.size-- }
+  set_size(percentage) { this.size = percentage * 16 }
 
-  draw(position) {
-    this.position = position.copy()
-    this.view_model.draw(position, this.size)
+  draw(position, direction) {
+    this.view_model.draw(position, this.size, direction)
   }
 
   static generate() {
@@ -18,30 +16,38 @@ class Virus_view {
       new Virus_view_model_01()
     ]
 
-    return models[floor(random(0, models.length))]
+    return models[Math.floor(random(0, models.length))]
   }
 }
 
 class Virus_view_model_01 {
 
   constructor() {
-    this.color_stages = [ '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107' ]
+    this.color = '#FFEB3B'
+    this.stroke = '#4CAF50'
+    this.angle = 0
+    this.angular_velocity = 0.005 * Math.round(random(-1, 1))
   }
 
-  draw(position, size) {
+  draw(position, size, direction) {
+
     push()
-    translate(position.x, position.y)
-    angleMode(RADIANS)
-    noFill()
-    rectMode(CENTER)
-    stroke(this.color_stages[floor(size * this.color_stages.length / 20)])
-    strokeWeight(1)
-    for (let i = 0; i < 3 * 2; i++) {
-      rotate(Math.PI / 6)
-      rect(0, 0, size, size)
-      rect(0, 0, size / 1.5, size / 1.5)
-      rect(0, 0, size / 3, size / 3)
+    {
+      ellipseMode(CENTER)
+      fill(this.color)
+      stroke(this.stroke)
+      translate(position.x, position.y)
+      rotate(direction.heading() + this.angle)
+      strokeWeight(2)
+      line(0, - size / 4, - size / 4, + size / 4)
+      line(- size / 4, + size / 4, + size / 4, + size / 4)
+      line(+ size / 4, + size / 4, 0, - size / 4)
+      ellipse(0, - size / 4, size / 3, size / 3)
+      ellipse(- size / 4, + size / 4, size / 3, size / 3)
+      ellipse(+ size / 4, + size / 4, size / 3, size / 3)
     }
     pop()
+
+    this.angle += this.angular_velocity
   }
 }
