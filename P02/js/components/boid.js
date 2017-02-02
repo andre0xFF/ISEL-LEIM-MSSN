@@ -1,70 +1,27 @@
 // https://processing.org/examples/flocking.html
 class Boid {
-  constructor(position, velocity, energy) {
-    this.position = position
-    this.velocity = velocity
+
+  get_energy() { return this.energy }
+  get_attack() { return this.attack }
+  get_mover() { return this.mover }
+  get_behaviours() { return this.behaviours }
+  set_birth_rate(rate) { this.birth_rate = rate }
+  set_attack(dmg) { this.attack = dmg }
+
+  constructor(mover, energy) {
+    this.mover = mover
     this.energy = energy
+    this.attack = energy / 2
+    this.birth_rate = 0
+    this.behaviours = new Behaviours()
   }
 
-  eat(energy) {
-    this.energy += energy
-  }
+  is_alive() { return this.energy > 0 }
+  damage(dmg) { this.energy = this.energy <= 0 ? 0 : this.energy - dmg * system.delta }
+  replicate() { return (random(1) < this.birth_date) }
 
-  damage(delta) {
-    this.energy -= 5 * delta
-  }
-
-  replicate() {
-
-  }
-
-  update(position, velocity, delta) {
-    this.position = position
-    this.velocity = velocity
-    this.energy -= 1 * system.delta
-  }
-
-  seek(target, speed) {
-    let dir = p5.Vector.sub(target, this.position)
-    return p5.Vector.sub(dir.normalize().mult(speed), this.velocity)
-  }
-
-  flee(target) {
-    let steer = this.seek(target, target.velocity.mag())
-    return steer.mult(-1)
-  }
-
-  arrive(target, speed, radius) {
-    let dir = p5.Vector.sub(target, this.position)
-
-    if (dir.mag() < radius) {
-      speed = dir.mag() * speed / radius
-    }
-
-    return p5.Vector.sub(dir.normalize().mult(speed), this.velocity)
-  }
-
-  pursuit() {
-
-  }
-
-  evade() {
-
-  }
-
-  separate() {
-
-  }
-
-  wander() {
-
-  }
-
-  avoid() {
-
-  }
-
-  inside_vision() {
-
+  update() {
+    this.damage(1)
+    this.behaviours.update()
   }
 }
