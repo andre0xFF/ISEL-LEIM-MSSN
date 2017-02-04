@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title></title>
-    <script type="text/javascript" src="https://github.com/processing/p5.js/releases/download/0.5.6/p5.min.js" async></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.6/p5.min.js" async></script>
     <script type="text/javascript">
 
       class Tracker {
@@ -180,7 +180,7 @@
             this.objects[i].get_mover().move(delta)
 
             let pos = this.objects[i].get_mover().get_position()
-            let siz = this.objects[i].get_size()
+            // let siz = this.objects[i].get_size()
 
             // toroidal world
             pos.x = (pos.x + this.width) % this.width;
