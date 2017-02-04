@@ -21,7 +21,10 @@ class Boid {
   replicate() { return (random(1) < this.birth_date) }
 
   update() {
-    this.damage(1)
+    if (!this.is_alive()) {
+      return
+    }
+
     this.behaviours.update()
   }
 }

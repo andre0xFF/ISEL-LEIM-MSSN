@@ -30,7 +30,6 @@ class Virus_view_model_01 {
   }
 
   draw(position, size, direction) {
-
     push()
     {
       ellipseMode(CENTER)

@@ -7,19 +7,24 @@ class Behaviours {
       active: [],
       passive: []
     }
-  }
-  add(behaviour, type) { this.queue[type].unshift(behaviour) }
-  add_priority(behaviour) { this.priority = behaviour }
-  pop_passive() { return this.passive_queue.pop() }
 
-  remove(behaviour, type) {
-    let i = this.queue[type].indexOf(behaviour)
-    return this.queue[type].splice(i, 1)
+    this.active = null
+    this.priority = null
+    this.passive = []
+    this.queue = []
   }
+
+  add(behaviour) { this.queue.unshift(behaviour) }
+  rm() { this.active = null }
+  set_priority(behaviour) { this.priority = behaviour }
+  rm_priority() { this.priority = null }
+  add_passive(behaviour) { this.passive.unshift(behaviour) }
+  rm_passive(behaviour) { this.passive.splice(this.passive.indexOf(behaviour), 1) }
+
   update() {
     // Update all passive behaviours
-    for (var i = 0; i < this.queue['passive'].length; i++) {
-      this.queue['passive'][i].update()
+    for (var i = 0; i < this.passive.length; i++) {
+      this.passive[i].update()
     }
     // Check if there is any behaviour with priority
     if (this.priority !== null) {
@@ -27,8 +32,8 @@ class Behaviours {
       this.priority = null
     }
     // Check if there is any behaviour to start
-    if (this.active === null && this.queue['active'].length > 0) {
-      this.active = this.queue['active'].pop()
+    if (this.active === null && this.queue.length > 0) {
+      this.active = this.queue.pop()
     }
     // Update the current behaviour
     if (this.active !== null && this.active.update()) {
@@ -43,7 +48,7 @@ class Seek {
     this.time = millis()
     this.m_01 = mover_01
     this.m_02 = mover_02
-    this.accuracy = 0.1
+    this.accuracy = SPACING
   }
   update() {
     let steer = Seek.calc_steering_force(this.m_01.get_position(), this.m_01.get_velocity(), this.m_01.get_max_speed(), this.m_02.get_position())
