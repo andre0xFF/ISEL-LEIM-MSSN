@@ -5,10 +5,27 @@ let debug
 
 function setup() {
 
+  let options = {
+    mouse: false,
+    grid: false,
+    cho: {
+      log: false 
+    },
+    rbc: {
+      log: false
+    },
+    wbc: {
+      log: false, vision: true
+    },
+    virus: {
+      log: false, vision: true
+    }
+  }
+
   createCanvas(1900, 1050)
   system = new System()
   environment = new Environment(width, height)
-  debug = new Debug(environment, { mouse: false, grid: true, cho: true, rbc: false, wbc: true, virus: true })
+  debug = new Debug(environment, options)
   metrics = new Metrics(environment, 1.5, false)
 }
 

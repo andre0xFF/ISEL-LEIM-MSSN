@@ -24,20 +24,44 @@ class Environment {
     this.virus = []
     this.width = width
     this.height = height
+    this.color = '#352828'
 
     for (let i = 0; i < 80; i++) {
       this.rbc.push(new RBC(createVector(random(0, width), random(0, height))))
     }
-
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 30; i++) {
       this.cho.push(new CHO(createVector(random(0, width), random(0, height))))
-      this.wbc.push(new WBC(createVector(400, 800)))
-      this.virus.push(new Virus(createVector(400 + 300 * Math.round(random(-1, 1)), 300)))
+    }
+    for (let i = 0; i < 10; i++) {
+      this.wbc.push(this.generate_wbc(null))
+    }
+    for (let i = 0; i < 1; i++) {
+      this.virus.push(this.generate_virus(null))
     }
   }
 
+  generate_wbc(wbc) {
+    if (wbc === null) {
+      wbc = new WBC(createVector(400, 800))
+    }
+    wbc.add_avoid(this.cho)
+
+    return wbc
+  }
+
+  generate_virus(virus) {
+    if (virus === null) {
+      virus = new Virus(createVector(400 + 300 * Math.round(random(-1, 1)), 300))
+    }
+
+    virus.add_wander()
+    virus.add_avoid(this.cho)
+
+    return virus
+  }
+
   update() {
-    background('#352828')
+    background(this.color)
 
     // CHO
     for (let i = 0; i < this.cho.length; i++) {
@@ -56,8 +80,9 @@ class Environment {
         continue
       }
 
-      if (this.wbc[i].get_boid().replicate()) {
-        this.wbc.push(this.wbc[i].generate_replica())
+      let replica = this.wbc[i].get_replica()
+      if (replica !== undefined) {
+        this.wbc.push(this.generate_wbc(replica))
       }
 
       this.wbc[i].update()
@@ -71,8 +96,9 @@ class Environment {
         continue
       }
 
-      if (this.virus[i].get_boid().replicate()) {
-        this.virus.push(this.virus[i].generate_replica())
+      let replica = this.virus[i].get_replica()
+      if (replica !== undefined) {
+        this.wbc.push(this.generate_virus(replica))
       }
 
       this.virus[i].update()
@@ -156,28 +182,34 @@ class Debug {
     {
       fill(this.color)
 
-      if (this.e_objects.cho) {
-        for (let i = 0; i < this.env.cho.length; i++) {
+      for (let i = 0; i < this.env.cho.length; i++) {
+        if (this.e_objects.cho.log) {
           let mover = this.env.cho[i].get_mover()
           text(mover.print(), mover.get_position().x + 16, mover.get_position().y)
         }
       }
-      if (this.e_objects.rbc) {
-        for (let i = 0; i < this.env.rbc.length; i++) {
+      for (let i = 0; i < this.env.rbc.length; i++) {
+        if (this.e_objects.rbc.log) {
           let mover = this.env.rbc[i].get_mover()
           text(mover.print(), mover.get_position().x + 16, mover.get_position().y)
         }
       }
-      if (this.e_objects.wbc) {
-        for (let i = 0; i < this.env.wbc.length; i++) {
+      for (let i = 0; i < this.env.wbc.length; i++) {
+        if (this.e_objects.wbc.log) {
           let mover = this.env.wbc[i].get_mover()
           text(mover.print(), mover.get_position().x + 16, mover.get_position().y)
         }
+        if (this.e_objects.wbc.vision && this.env.wbc[i].vision_view != null) {
+          this.env.wbc[i].vision_view.draw(this.env.wbc[i].get_mover().get_position(), this.env.wbc[i].get_mover().get_direction())
+        }
       }
-      if (this.e_objects.virus) {
-        for (let i = 0; i < this.env.virus.length; i++) {
+      for (let i = 0; i < this.env.virus.length; i++) {
+        if (this.e_objects.virus.log) {
           let mover = this.env.virus[i].get_mover()
           text(mover.print(), mover.get_position().x + 16, mover.get_position().y)
+        }
+        if (this.e_objects.virus.vision && this.env.virus[i].vision_view != null) {
+          this.env.virus[i].vision_view.draw(this.env.virus[i].get_mover().get_position(), this.env.virus[i].get_mover().get_direction())
         }
       }
     }
