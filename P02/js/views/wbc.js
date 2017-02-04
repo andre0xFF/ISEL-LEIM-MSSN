@@ -1,22 +1,14 @@
 class WBC_view {
 
   constructor() {
-    this.view_model = WBC_view.generate()
+    this.view_model = View.generate([new WBC_view_model_01()])
     this.size = random(16 / 2, 16)
   }
 
   set_size(percentage) { this.size = percentage * 16 }
 
   draw(position) {
-    this.view_model.draw(position, this.size)
-  }
-
-  static generate() {
-    let models = [
-      new WBC_view_model_01()
-    ]
-
-    return models[floor(random(0, models.length))]
+    this.view_model.draw(position.copy(), this.size)
   }
 }
 

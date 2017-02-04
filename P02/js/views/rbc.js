@@ -1,7 +1,7 @@
 class RBC_view {
 
   constructor() {
-    this.view_model = RBC_view.generate()
+    this.view_model = View.generate([new RBC_view_model_02()])
     this.height = random(12 / 1.2, 12)
     this.width = random(12 / 1.2, 12)
   }
@@ -17,15 +17,7 @@ class RBC_view {
   }
 
   draw(position) {
-    this.view_model.draw(position, this.width, this.height)
-  }
-
-  static generate() {
-    let models = [
-      new RBC_view_model_02()
-    ]
-
-    return models[floor(random(0, models.length))]
+    this.view_model.draw(position.copy(), this.width, this.height)
   }
 }
 

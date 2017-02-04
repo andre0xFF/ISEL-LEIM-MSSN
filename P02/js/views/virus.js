@@ -1,22 +1,14 @@
 class Virus_view {
 
   constructor() {
-    this.view_model = Virus_view.generate()
+    this.view_model = View.generate([new Virus_view_model_01()])
     this.size = 12
   }
 
   set_size(percentage) { this.size = percentage * 16 }
 
   draw(position, direction) {
-    this.view_model.draw(position, this.size, direction)
-  }
-
-  static generate() {
-    let models = [
-      new Virus_view_model_01()
-    ]
-
-    return models[Math.floor(random(0, models.length))]
+    this.view_model.draw(position.copy(), this.size, direction)
   }
 }
 

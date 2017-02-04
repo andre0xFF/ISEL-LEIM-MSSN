@@ -1,24 +1,16 @@
 class CHO_view {
 
   constructor() {
-    this.view_model = CHO_view.generate()
+    this.view_model = View.generate([new CHO_view_model_01(), new CHO_view_model_02()])
     this.size = 16
   }
 
   set_size(percentage) { this.size = percentage * 16 }
 
   draw(position) {
-    this.view_model.draw(position, this.size)
+    this.view_model.draw(position.copy(), this.size)
   }
 
-  static generate() {
-    let models = [
-      new CHO_view_model_01(),
-      new CHO_view_model_02()
-    ]
-
-    return models[floor(random(0, models.length))]
-  }
 }
 
 class CHO_view_model_01 {
@@ -40,6 +32,7 @@ class CHO_view_model_01 {
     }
     pop()
   }
+
 }
 
 class CHO_view_model_02 {
@@ -62,4 +55,5 @@ class CHO_view_model_02 {
     }
     pop()
   }
+
 }
