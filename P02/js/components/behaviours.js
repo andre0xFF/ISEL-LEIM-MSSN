@@ -10,12 +10,14 @@ class Behaviours {
 
     this.active = null
     this.priority = null
+    this.default = null
     this.passive = []
     this.queue = []
   }
 
   add(behaviour) { this.queue.unshift(behaviour) }
   rm() { this.active = null }
+  set_default(behaviour) { this.default = behaviour }
   set_priority(behaviour) { this.priority = behaviour }
   rm_priority() { this.priority = null }
   add_passive(behaviour) { this.passive.unshift(behaviour) }
@@ -35,11 +37,16 @@ class Behaviours {
     if (this.active === null && this.queue.length > 0) {
       this.active = this.queue.pop()
     }
+    // If there are no behaviours at all then fall back to default
+    if (this.active === null) {
+      this.active = this.default
+    }
     // Update the current behaviour
     if (this.active !== null && this.active.update()) {
       this.active = null
     }
   }
+
 }
 
 class Seek {
@@ -50,19 +57,23 @@ class Seek {
     this.m_02 = mover_02
     this.accuracy = SPACING
   }
+
   update() {
     let steer = Seek.calc_steering_force(this.m_01.get_position(), this.m_01.get_velocity(), this.m_01.get_max_speed(), this.m_02.get_position())
 
     this.m_01.add_force(steer.copy())
     return this.exit()
   }
+
   exit() {
     return p5.Vector.dist(this.m_01.get_position(), this.m_02.get_position()) < this.accuracy
   }
+
   static calc_steering_force(pos, vel, desired_speed, target_pos) {
     let dir = p5.Vector.sub(target_pos, pos)
     return p5.Vector.sub(dir.normalize().mult(desired_speed), vel)
   }
+
 }
 
 class Arrive {
@@ -75,6 +86,7 @@ class Arrive {
     this.radius = radius
     this.accuracy = 0.02
   }
+
   update() {
     this.speed = this.m_01.get_max_speed()
     let dist = p5.Vector.dist(this.m_01.get_position(), this.m_02.get_position())
@@ -88,9 +100,11 @@ class Arrive {
     this.m_01.add_force(steer.copy())
     return this.exit()
   }
+
   exit() {
     return p5.Vector.dist(this.m_01.get_position(), this.m_02.get_position()) < this.accuracy
   }
+
 }
 
 class Flee {
@@ -101,6 +115,7 @@ class Flee {
     this.m_02 = mover_02
     this.distance = SPACING * 10
   }
+
   update() {
     let steer = Seek.calc_steering_force(this.m_01.get_position(), this.m_01.get_velocity(), this.m_01.get_max_speed(), this.m_02.get_position())
     steer.mult(-1)
@@ -108,9 +123,11 @@ class Flee {
     this.m_01.add_force(steer.copy())
     return this.exit()
   }
+
   exit() {
     return p5.Vector.dist(this.m_01.get_position(), this.m_02.get_position()) > this.distance
   }
+
 }
 
 class Wander {
@@ -121,6 +138,7 @@ class Wander {
     this.r = 100
     this.theta = random(2 * Math.PI)
   }
+
   update() {
     let c = p5.Vector.add(this.mover.get_position(), p5.Vector.mult(this.mover.get_velocity(), this.delta))
     this.theta += random(- Math.PI / 10, Math.PI / 10)
@@ -130,9 +148,11 @@ class Wander {
     this.mover.add_force(steer.copy())
     return this.exit()
   }
+
   exit() {
     return false
   }
+
 }
 
 class Pursuit {
@@ -144,6 +164,7 @@ class Pursuit {
     this.delta = 0.8
     this.accuracy = 1
   }
+
   update() {
     let target = p5.Vector.add(this.m_02.get_position(), p5.Vector.mult(this.m_02.get_velocity(), this.delta))
     let steer = Seek.calc_steering_force(this.m_01.get_position(), this.m_01.get_velocity(), this.m_01.get_max_speed(), target)
@@ -151,9 +172,11 @@ class Pursuit {
     this.m_01.add_force(steer.copy())
     return this.exit()
   }
+
   exit() {
     return p5.Vector.dist(this.m_01.get_position(), this.m_02.get_position()) < this.accuracy
   }
+
 }
 
 class Evade {
@@ -165,6 +188,7 @@ class Evade {
     this.delta = 0.8
     this.distance = SPACING * 10
   }
+
   update() {
     let target = p5.Vector.add(this.m_02.get_position(), p5.Vector.mult(this.m_02.get_velocity(), this.delta))
     let steer = Seek.calc_steering_force(this.m_01.get_position(), this.m_01.get_velocity(), this.m_01.get_max_speed(), target)
@@ -173,24 +197,11 @@ class Evade {
     this.m_01.add_force(steer.copy())
     return this.exit()
   }
+
   exit() {
     return p5.Vector.dist(this.m_01.get_position(), this.m_02.get_position()) > this.distance
   }
-}
 
-class Avoid {
-
-  constructor(mover_01, mover_02) {
-    this.time = millis()
-    this.m_01 = mover_01
-    this.m_02 = mover_02
-  }
-  update() {
-
-  }
-  exit() {
-    return true
-  }
 }
 
 class Separate {
@@ -200,27 +211,68 @@ class Separate {
     this.m_01 = mover_01
     this.m_02 = mover_02
   }
+
   update() {
 
   }
+
   exit() {
     return true
   }
+
 }
 
-class Vision {
+class Avoid {
 
-  constructor(mover_01, mover_02, vision_range) {
+  constructor(mover_01, radius, angle, mover_02) {
     this.time = millis()
     this.m_01 = mover_01
+    this.radius = radius
+    this.angle = angle
     this.m_02 = mover_02
   }
-  update() {
 
+  update() {
+    let r = Avoid.has_vision(this.m_01.get_position(), this.m_01.get_direction(), this.radius, this.angle, this.m_02.get_position())
+
+    if (r) {
+      let vd = createVector(this.m_01.get_velocity().y, - this.m_01.get_velocity().x)
+      this.m_01.add_force(p5.Vector.sub(vd, this.m_01.get_velocity()))
+    }
+
+    return r
   }
-  exit() {
-    return true
+
+  exit() { }
+
+  static has_vision(position, direction, radius, angle, target) {
+    let dif = p5.Vector.sub(target, position)
+    let theta = p5.Vector.angleBetween(dif, direction)
+    return dif.mag() < radius && theta < angle / 2
   }
+
+  static avoid_objects(position, velocity, radius, angle, targets) {
+    let c = 0
+    let cm = createVector(0, 0)
+    for (let i = 0; i < targets.length; i++) {
+      let dir = velocity.copy()
+      if(!Avoid.has_vision(position, dir.normalize(), radius, angle, target[i])) {
+        continue
+      }
+      c++
+      cm.add(target[i])
+    }
+
+    if (c === 0) {
+      return cm
+    }
+
+    cm.div(c)
+    let r = p5.Vector.sub(cm, position)
+    let vd = createVector(velocity.y, - velocity.x)
+    return p5.Vector.dot(vd, r)
+  }
+
 }
 
 class Attack {
@@ -230,10 +282,13 @@ class Attack {
     this.m_01 = mover_01
     this.m_02 = mover_02
   }
+
   update() {
 
   }
+
   exit() {
     return true
   }
+
 }

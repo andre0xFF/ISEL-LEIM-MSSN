@@ -5,7 +5,7 @@ class Boid {
   get_attack() { return this.attack }
   get_mover() { return this.mover }
   get_behaviours() { return this.behaviours }
-  set_birth_rate(rate) { this.birth_rate = rate }
+  set_replication_rate(rate) { this.replication_rate = rate }
   set_attack(dmg) { this.attack = dmg }
 
   constructor(mover, energy) {
@@ -18,7 +18,7 @@ class Boid {
 
   is_alive() { return this.energy > 0 }
   damage(dmg) { this.energy = this.energy <= 0 ? 0 : this.energy - dmg * system.delta }
-  replicate() { return (random(1) < this.birth_date) }
+  replicate() { return (random(1) < this.replication_rate * system.delta) }
 
   update() {
     if (!this.is_alive()) {
