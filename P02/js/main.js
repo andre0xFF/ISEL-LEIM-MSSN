@@ -9,16 +9,16 @@ function setup() {
     mouse: false,
     grid: false,
     cho: {
-      log: false 
+      log: false
     },
     rbc: {
       log: false
     },
     wbc: {
-      log: false, vision: true
+      log: false, vision: false
     },
     virus: {
-      log: false, vision: true
+      log: false, vision: false
     }
   }
 
