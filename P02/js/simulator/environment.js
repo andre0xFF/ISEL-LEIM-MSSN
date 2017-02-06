@@ -27,16 +27,16 @@ class Environment {
     this.height = height
     this.color = '#352828'
 
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 250; i++) {
       this.rbc.push(new RBC(createVector(random(0, this.width), random(0, this.height))))
     }
     for (let i = 0; i < 40; i++) {
       this.cho.push(new CHO(createVector(random(0, this.width), random(0, this.height))))
     }
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 0; i++) {
       this.wbc.push(new WBC(createVector(this.width, random(0, this.height / 3))))
     }
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 12; i++) {
       this.virus.push(new Virus(createVector(400 + 300 * Math.round(random(-1, 1)), 300)))
     }
     // Behaviours
@@ -50,7 +50,7 @@ class Environment {
       this.virus[i].enable_behaviours(this.cho, this.rbc, this.wbc, this.virus)
     }
 
-    this.flock = new Flock(this.wbc)
+    // this.flock = new Flock(this.wbc)
   }
 
   update() {
@@ -100,11 +100,9 @@ class Environment {
       this.apply_coordinates(this.wbc[i].get_mover())
     }
 
-    if (this.virus.length / this.wbc.length > 10) {
+    if (this.virus.length / this.wbc.length > 4) {
       let w = new WBC(createVector(this.width, random(0, this.height)))
       w.enable_behaviours(this.cho, this.virus, this.wbc)
-      this.wbc.push(w)
-      this.wbc.push(w)
       this.wbc.push(w)
     }
     // Virus

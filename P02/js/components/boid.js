@@ -12,7 +12,7 @@ class Boid {
   constructor(mover, energy) {
     this.mover = mover
     this.energy = energy
-    this.attack = energy * 1.5
+    this.attack = energy * 2
     this.replication_rate = 0
     this.behaviours = []
     this.priority = null
@@ -39,13 +39,19 @@ class Boid {
   increase_energy(energy) { this.energy += energy }
 
   damage(dmg) {
-    this.energy -= dmg * system.delta
+    dmg *= system.delta
+    let health = 0
 
-    if (this.energy < 0) {
+    if (dmg > this.energy) {
+      health = this.energy
       this.energy = 0
+
+    } else {
+      this.energy -= dmg
+      health = dmg
     }
 
-    return dmg * system.delta
+    return health
   }
 
   print() {

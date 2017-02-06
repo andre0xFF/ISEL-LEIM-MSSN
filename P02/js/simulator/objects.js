@@ -7,7 +7,7 @@ class RBC {
     this.mover = new Mover(position, createVector(0, 0))
     this.boid = new Boid(this.mover, 60)
     this.view = new RBC_view()
-    this.regeneration_time = random(15, 60)
+    this.regeneration_time = random(20, 90)
   }
 
   update() {
@@ -25,7 +25,7 @@ class RBC {
 
     if (this.regeneration_time <= 0) {
       this.boid = new Boid(this.mover, 60)
-      this.regeneration_time = random(15, 30)
+      this.regeneration_time = random(20, 90)
     }
   }
 
@@ -44,8 +44,8 @@ class WBC {
     this.boid.set_replication_rate(0)
     this.view = new WBC_view()
     this.vision = {
-      radius: 16 * 10,
-      angle: Math.PI / 2
+      radius: 16 * 15,
+      angle: Math.PI * 3 / 2
     }
     this.vision_view = new Vision_view(this.vision.radius, this.vision.angle)
   }
@@ -78,6 +78,7 @@ class WBC {
     this.boid.add(new Wander(this.mover))
     this.boid.add(new Avoid(this.mover, this.vision, cho))
     this.boid.add(new Attack(this.boid, virus))
+    this.boid.add(new Pursuit(this.mover, virus))
   }
 
 }
@@ -118,14 +119,13 @@ class Virus {
     this.boid = new Boid(this.mover, 60)
     this.view = new Virus_view()
     this.vision = {
-      radius: 16 * 10,
-      angle: Math.PI / 2
+      radius: 16 * 5,
+      angle: Math.PI * 3 / 2
     }
     this.vision_view = new Vision_view(this.vision.radius, this.vision.angle)
   }
 
   update() {
-    // this.mouse.mover.position = createVector(mouseX, mouseY)
     this.mover.update()
     this.boid.update()
     this.boid.damage(1)
@@ -154,8 +154,6 @@ class Virus {
     this.boid.add(new Avoid(this.mover, this.vision, cho))
     this.boid.add(new Attack(this.boid, rbc))
     this.boid.add(new Evade(this.mover, wbc))
-    // this.mouse = new Boid(new Mover(createVector(mouseX, mouseY), createVector(3, 3)), 1000)
-    // this.boid.set_priority(new Arrive(this.mover, 200, [this.mouse]))
   }
 
 }
