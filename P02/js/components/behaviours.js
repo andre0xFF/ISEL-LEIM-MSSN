@@ -1,125 +1,34 @@
-class Behaviours {
+class Avoid {
 
-  constructor() {
-    this.active = []
-    this.priority = null
-    // this.default = null
-    this.passive = []
-    this.queue = []
+  constructor(mover, vision, objects) {
+    this.mover = mover
+    this.vision = vision
+    this.targets = objects
+    this.persistent = true
+    this.skip = []
   }
 
-  add_active(behaviour) { this.active.unshift(behaviour) }
-  set_priority(behaviour) { this.priority = behaviour }
-  rm_priority() { this.priority = null }
-  add_passive(behaviour) { this.passive.unshift(behaviour) }
-  rm_passive(behaviour) { this.passive.splice(this.passive.indexOf(behaviour), 1) }
-
   update() {
-    if (this.priority !== null && this.priority.update()) {
-      this.priority = null
-    }
-    if (this.priority === null && this.queue.length > 0) {
-      this.priority = this.queue.pop()
-    }
-    if (this.priority !== null) {
-      return
-    }
-    for (var i = 0; i < this.active.length; i++) {
-      if (this.active[i].update()) {
-        this.active.splice(i, 1)
+    for (let i = 0; i < this.targets.length; i++) {
+      if (this.skip.includes(i)) {
+        continue
+      }
+
+      let r = Boid.vision(this.mover.get_position(), this.mover.get_direction(), this.vision.radius, this.vision.angle, this.targets[i].mover.get_position())
+
+      if (r) {
+        let f = Avoid.calculate(this.mover.get_velocity())
+        this.mover.add_force(f)
+
+      } else if (!this.persistent) {
+        this.skip.push(i)
       }
     }
-    for (var i = 0; i < this.passive.length; i++) {
-      this.passive[i].update()
-    }
   }
 
-  static vision(position, direction, radius, angle, target) {
-    let dif = p5.Vector.sub(target, position)
-    if (direction.x !== 0 && direction.y !== 0) {
-      let theta = p5.Vector.angleBetween(dif, direction)
-      return dif.mag() < radius && theta < angle / 2
-    }
-
-      return dif.mag() < radius
-  }
-
-  static steering_force(position, velocity, speed, target) {
-    let dir = p5.Vector.sub(target, position)
-    return p5.Vector.sub(dir.normalize().mult(speed), velocity)
-  }
-
-}
-
-class Seek {
-
-  constructor(mover_01, mover_02) {
-    this.m_01 = mover_01
-    this.m_02 = mover_02
-    this.accuracy = SPACING
-  }
-
-  update() {
-    let steer = Behaviours.steering_force(this.m_01.get_position(), this.m_01.get_velocity(), this.m_01.get_max_speed(), this.m_02.get_position())
-
-    this.m_01.add_force(steer.copy())
-    return this.exit()
-  }
-
-  exit() {
-    return p5.Vector.dist(this.m_01.get_position(), this.m_02.get_position()) < this.accuracy
-  }
-
-}
-
-class Arrive {
-
-  constructor(mover_01, mover_02, radius) {
-    this.m_01 = mover_01
-    this.m_02 = mover_02
-    this.speed = mover_01.get_max_speed()
-    this.radius = radius
-    this.accuracy = 0.02
-  }
-
-  update() {
-    this.speed = this.m_01.get_max_speed()
-    let dist = p5.Vector.dist(this.m_01.get_position(), this.m_02.get_position())
-
-    if (dist < this.radius) {
-      this.speed = dist * this.speed / this.radius
-    }
-
-    let steer = Behaviours.steering_force(this.m_01.get_position(), this.m_01.get_velocity(), this.speed, this.m_02.get_position())
-
-    this.m_01.add_force(steer.copy())
-    return this.exit()
-  }
-
-  exit() {
-    return p5.Vector.dist(this.m_01.get_position(), this.m_02.get_position()) < this.accuracy
-  }
-
-}
-
-class Flee {
-
-  constructor(mover_01, mover_02) {
-    this.m_01 = mover_01
-    this.m_02 = mover_02
-    this.distance = SPACING * 10
-  }
-
-  update() {
-    let steer = Behaviours.steering_force(this.m_01.get_position(), this.m_01.get_velocity(), this.m_01.get_max_speed(), this.m_02.get_position())
-    steer.mult(-1)
-
-    this.m_01.add_force(steer.copy())
-    return this.exit()
-  }
-
-  exit() {
-    return p5.Vector.dist(this.m_01.get_position(), this.m_02.get_position()) > this.distance
+  static calculate(velocity) {
+    let vd = createVector(velocity.y, - velocity.x)
+    return p5.Vector.sub(vd, velocity)
   }
 
 }
@@ -131,220 +40,363 @@ class Wander {
     this.delta = 0.4
     this.r = 100
     this.theta = random(2 * Math.PI)
+    this.persistent = true
   }
 
   update() {
-    let c = p5.Vector.add(this.mover.get_position(), p5.Vector.mult(this.mover.get_velocity(), this.delta))
-    this.theta += random(- Math.PI / 10, Math.PI / 10)
-    let t = p5.Vector.add(c, createVector(this.r * Math.cos(this.theta), this.r * Math.sin(this.theta)))
-    let steer = Behaviours.steering_force(this.mover.get_position(), this.mover.get_velocity(), this.mover.get_max_speed(), t)
+    let f = Wander.calculate(this.mover.get_position(), this.mover.get_velocity(), this.mover.get_max_speed(), this.r, this.delta, this.theta)
 
-    this.mover.add_force(steer.copy())
-    return this.exit()
+    this.mover.add_force(f)
+    this.theta += random(- Math.PI / 10, Math.PI / 10)
+
+    return !this.persistent
   }
 
-  exit() {
-    return false
+  static calculate(position, velocity, speed, radius, delta, theta) {
+    let c = p5.Vector.add(position, p5.Vector.mult(velocity, delta))
+    let t = p5.Vector.add(c, createVector(radius * Math.cos(theta), radius * Math.sin(theta)))
+    let steer = Boid.steering_force(position, velocity, speed, t)
+    return steer
+  }
+
+}
+
+class Evade {
+
+  constructor(mover, objects) {
+    this.mover = mover
+    this.targets = objects
+    this.delta = 0.8
+    this.distance = SPACING * 2
+    this.persistent = true
+    this.skip = []
+  }
+
+  update() {
+    for (let i = 0; i < this.targets.length; i++) {
+      if (!this.skip.includes(i) && p5.Vector.dist(this.mover.get_position(), this.targets[i].mover.get_position()) <= this.distance) {
+        let f = Evade.calculate(this.mover.get_position(), this.mover.get_velocity(), this.mover.get_max_speed(), this.delta, this.targets[i].mover.get_position(), this.targets[i].mover.get_velocity())
+        this.mover.add_force(f)
+      }
+      else if (!this.persistent) {
+        this.skip.push(i)
+      }
+    }
+  }
+
+  static calculate(position, velocity, speed, delta, target_position, target_velocity) {
+    let steer = Pursuit.calculate(position, velocity, speed, delta, target_position, target_velocity)
+    steer.mult(-1)
+    return steer
+  }
+
+}
+
+class Seek {
+
+  constructor(mover, objects) {
+    this.mover = mover
+    this.targets = objects
+    this.accuracy = SPACING
+    this.target = this.targets[0]
+    this.persistent = false
+    this.skip = []
+  }
+
+  update() {
+    if (this.targets.length === 0) { return true }
+
+    for (var i = 0; i < this.targets.length; i++) {
+      if (!this.skip.includes(i) && p5.Vector.dist(this.targets[i].mover.get_position(), this.mover.get_position()) < p5.Vector.dist(this.target.mover.get_position(), this.mover.get_position())) {
+        this.target = this.targets[i]
+      }
+    }
+
+    let f = Seek.calculate(this.mover.get_position(), this.mover.get_velocity(), this.mover.get_max_speed(), this.target.mover.get_position())
+    this.mover.add_force(f)
+
+    if (!this.persistent && p5.Vector.dist(this.mover.get_position(), this.target.mover.get_position()) < this.accuracy) {
+      this.skip.push(this.targets.indexOf(this.target))
+    }
+  }
+
+  static calculate(position, velocity, speed, target_position) {
+    let steer = Boid.steering_force(position, velocity, speed, target_position)
+    return steer
   }
 
 }
 
 class Pursuit {
 
-  constructor(mover_01, mover_02) {
-    this.m_01 = mover_01
-    this.m_02 = mover_02
+  constructor(mover, objects) {
+    this.mover = mover
+    this.targets = objects
     this.delta = 0.8
     this.accuracy = 1
+    this.target = this.targets[0]
+    this.skip = []
+    this.persistent = false
   }
 
   update() {
-    let steer = Pursuit.calculate(this.m_01.get_position(), this.m_01.get_velocity(), this.m_01.get_max_speed(), this.delta, this.m_02.get_position(), this.m_02.get_velocity())
+    if (this.targets.length === 0) { return true }
 
-    this.m_01.add_force(steer.copy())
-    return this.exit()
-  }
+    for (var i = 0; i < this.targets.length; i++) {
+      if (!this.skip.includes(i) && p5.Vector.dist(this.targets[i].mover.get_position(), this.mover.get_position()) < p5.Vector.dist(this.target.mover.get_position(), this.mover.get_position())) {
+        this.target = this.targets[i]
+      }
+    }
 
-  exit() {
-    return p5.Vector.dist(this.m_01.get_position(), this.m_02.get_position()) < this.accuracy
+    let f = Pursuit.calculate(this.mover.get_position(), this.mover.get_velocity(), this.mover.get_max_speed(), this.delta, this.target.mover.get_position(), this.target.mover.get_velocity())
+    this.mover.add_force(f)
+
+    if (!this.persistent && p5.Vector.dist(this.mover.get_position(), this.target.mover.get_position()) < this.accuracy) {
+      this.skip.push(this.targets.indexOf(this.target))
+    }
   }
 
   static calculate(position, velocity, speed, delta, target_position, target_velocity) {
     let new_position = p5.Vector.add(target_position, p5.Vector.mult(target_position, delta))
-    let steer = Behaviours.steering_force(position, velocity, speed, new_position)
+    let steer = Boid.steering_force(position, velocity, speed, new_position)
     return steer
   }
 }
 
-class Evade {
+class Arrive {
 
-  constructor(mover_01, mover_02) {
-    this.m_01 = mover_01
-    this.m_02 = mover_02
-    this.delta = 0.8
-    this.distance = SPACING * 10
+  constructor(mover, slow_down_radius, objects) {
+    this.mover = mover
+    this.targets = objects
+    this.radius = slow_down_radius
+    this.accuracy = 0.65
+    this.persistent = false
+    this.target = this.targets[0]
+    this.skip = []
   }
 
   update() {
-    let steer = Pursuit.calculate(this.m_01.get_position(), this.m_01.get_velocity(), this.m_01.get_max_speed(), this.delta, this.m_02.get_position(), this.m_02.get_velocity())
-    steer.mult(-1)
+    if (this.targets.length === 0) { return true }
 
-    this.m_01.add_force(steer.copy())
-    return this.exit()
+    for (var i = 0; i < this.targets.length; i++) {
+      if (!this.skip.includes(i) && p5.Vector.dist(this.targets[i].mover.get_position(), this.mover.get_position()) < p5.Vector.dist(this.target.mover.get_position(), this.mover.get_position())) {
+        this.target = this.targets[i]
+      }
+    }
+
+    let f = Arrive.calculate(this.mover.get_position(), this.mover.get_velocity(), this.mover.get_max_speed(), this.radius, this.target.mover.get_position())
+    this.mover.add_force(f)
+
+    if (!this.persistent && p5.Vector.dist(this.mover.get_position(), this.target.mover.get_position()) < this.accuracy) {
+      this.skip.push(this.targets.indexOf(this.target))
+    }
   }
 
-  exit() {
-    return p5.Vector.dist(this.m_01.get_position(), this.m_02.get_position()) > this.distance
+  static calculate(position, velocity, current_speed, slow_down_radius, target_position) {
+    let dist = p5.Vector.dist(position, target_position)
+
+    if (dist < slow_down_radius) {
+      current_speed = dist * current_speed / slow_down_radius
+    }
+
+    let steer = Boid.steering_force(position, velocity, current_speed, target_position)
+
+    return steer
   }
 
 }
 
-class Avoid {
+class Flee {
 
-  constructor(mover_01, radius, angle, mover_02) {
-    this.m_01 = mover_01
-    this.radius = radius
-    this.angle = angle
-    this.m_02 = mover_02
+  constructor(mover, objects) {
+    this.mover = mover_01
+    this.targets = objects
+    this.distance = SPACING * 10
+    this.skip = []
   }
 
   update() {
-    let r = Behaviours.vision(this.m_01.get_position(), this.m_01.get_direction(), this.radius, this.angle, this.m_02.get_position())
-
-    if (!r) {
-      return false
+    for (let i = 0; i < this.targets.length; i++) {
+      if (!this.skip.includes(i) && p5.Vector.dist(this.mover.get_position(), this.targets[i].mover.get_position()) <= this.distance) {
+        let f = Flee.calculate(this.mover.get_position(), this.mover.get_velocity(), this.mover.get_max_speed(), this.targets[i].mover.get_position())
+        this.mover.add_force(f)
+      }
+      else if (!this.persistent) {
+        this.skip.push(i)
+      }
     }
-
-    let vd = createVector(this.m_01.get_velocity().y, - this.m_01.get_velocity().x)
-    this.m_01.add_force(p5.Vector.sub(vd, this.m_01.get_velocity()))
-
-    return true
   }
 
-  exit() { }
+  static calculate(position, velocity, speed, target_position) {
+    let steer = Boid.steering_force(position, velocity, speed, target_position)
+    steer.mult(-1)
+    return steer
+  }
 
 }
 
 class Attack {
 
-  constructor(boid_01, boid_02) {
-    this.b_01 = boid_01
-    this.b_02 = boid_02
+  constructor(boid, objects) {
+    this.boid = boid
+    this.targets = objects
     this.position_accuracy = SPACING
+    this.persistent = false
+    this.skip = []
   }
 
   update() {
-    if (p5.Vector.dist(this.b_01.get_mover().get_position(), this.b_02.get_mover().get_position()) > this.position_accuracy) {
-      return
+    if (this.targets.length === 0) { return true }
+
+    for (let i = 0; i < this.targets.length; i++) {
+      if (!this.skip.includes(i) && this.targets[i].boid.is_alive() && p5.Vector.dist(this.targets[i].mover.get_position(), this.boid.mover.get_position()) < this.position_accuracy) {
+        let attack = this.boid.get_attack()
+        let dmg = this.targets[i].boid.damage(attack)
+        this.boid.increase_energy(dmg)
+      }
+      else if (!this.targets[i].boid.is_alive() && !this.persistent) {
+        this.skip.push(i)
+      }
     }
-
-    let attack = this.b_01.get_attack()
-    let dmg = this.b_02.damage(attack)
-    this.b_01.increase_energy(dmg)
-    return this.exit()
-  }
-
-  exit() {
-    return !this.b_02.is_alive()
   }
 
 }
 
 class Separate {
 
-  constructor(mover_01, radius, angle, mover_02) {
-    this.m_01 = mover_01
-    this.m_02 = mover_02
-    this.radius = radius
-    this.angle = angle
+  constructor(mover, vision, objects) {
+    this.mover = mover
+    this.targets = objects
+    this.vision = vision
+    this.persistent = true
   }
 
   update() {
-    let r = Behaviours.vision(this.m_01.get_position(), this.m_01.get_direction(), this.radius, this.angle, this.m_02.get_position())
+    let f = Separate.calculate(this.mover, this.vision, this.objects)
+    this.mover.add_force(f)
 
-    if (!r) {
-      return false
-    }
-
-    let f = Separate.calculate(this.m_01.get_position(), this.m_01.get_velocity(), this.m_02.get_position())
-    this.m_01.add_force(f)
-
-    return true
+    return !this.persistent
   }
 
-  exit() { }
 
-  static calculate() {
-    let dif = p5.Vector.sub(position, velocity, target)
-    let mag = dig.mag()
-    dif.normalize().div(d)
+  static calculate(mover, vision, targets) {
+    let in_vision = []
 
-    return p5.Vector.sub(dif, velocity)
+    for (let i = 0; i < targets.length; i++) {
+      if (Boid.vision(mover.get_position(), mover.get_direction(), vision.radius, vision.angle, targets[i].mover.get_position())) {
+        in_vision.push(targets[i])
+      }
+    }
+
+    let vd = createVector(0, 0)
+    for (var i = 0; i < in_vision.length; i++) {
+      let r = p5.Vector.sub(mover.get_position(), in_vision[i].mover.get_position())
+      let d = r.mag()
+      r.normalize()
+      r.div(d)
+      vd.add(r)
+    }
+
+    vd.normalize()
+    vd.mult(mover.get_max_speed())
+    return p5.Vector.sub(vd, mover.get_velocity())
   }
 
 }
 
 class Align {
 
-  constructor(mover_01, radius, angle, mover_02) {
-    this.m_01 = mover_01
-    this.m_02 = mover_02
-    this.radius = radius
-    this.angle = angle
+  constructor(mover, vision, objects) {
+    this.mover = mover
+    this.objects = objects
+    this.vision = vision
+    this.persistent = true
   }
 
   update() {
-    let r = Behaviours.vision(this.m_01.get_position(), this.m_01.get_direction(), this.radius, this.angle, this.m_02.get_position())
+    let f = Align.calculate(this.mover, this.vision, this.objects)
+    this.mover.add_force(f)
 
-    if (!r) {
-      return false
+    return !this.persistent
+  }
+
+  static calculate(mover, vision, targets) {
+    let in_vision = []
+
+    for (let i = 0; i < targets.length; i++) {
+      if (Boid.vision(mover.get_position(), mover.get_direction(), vision.radius, vision.angle, targets[i].mover.get_position())) {
+        in_vision.push(targets[i])
+      }
     }
 
-    let f = Align.calculate(this.m_01.get_velocity(), this.m_01.get_max_speed(), this.m_02.get_velocity())
+    let vd = createVector(0, 0)
+    for (let i = 0; i < in_vision.length; i++) {
+      vd.add(in_vision[i].mover.get_velocity())
+    }
 
-    return true
-  }
-
-  exit() {
-    return false
-  }
-
-  static calculate(velocity, speed, target_velocity) {
-    let new_direction = p5.Vector.add(velocity, target_velocity)
-    new_direction.normalize().mult(speed)
-    return p5.Vector.sub(new_direction, velocity)
+    vd.normalize().mult(mover.get_max_speed())
+    return p5.Vector.sub(vd, mover.get_velocity())
   }
 
 }
 
 class Cohesion {
 
-  constructor(mover_01, radius, angle, mover_02) {
-    this.m_01 = mover_01
-    this.m_02 = mover_02
-    this.radius = radius
-    this.angle = angle
+  constructor(mover, vision, objects) {
+    this.mover = mover
+    this.objects = objects
+    this.vision = vision
+    this.persistent = true
   }
 
   update() {
-    let r = Behaviours.vision(this.m_01.get_position(), this.m_01.get_direction(), this.radius, this.angle, this.m_02.get_position())
+    let f = Cohesion.calculate(this.mover, this.vision, this.objects)
+    this.mover.add_force(f)
 
-    if (!r) {
-      return false
+    return !this.persistent
+  }
+
+
+  static calculate(mover, vision, targets) {
+    let in_vision = []
+
+    for (let i = 0; i < targets.length; i++) {
+      if (Boid.vision(mover.get_position(), mover.get_direction(), vision.radius, vision.angle, targets[i].mover.get_position())) {
+        in_vision.push(targets[i])
+      }
     }
 
-    let steer = Cohesion.calculate(this.m_01.get_position(), this.m_01.get_velocity(), this.radius, this.angle, this.m_02.get_position())
+    let pos = createVector(0, 0)
+    for (let i = 0; i < in_vision.length; i++) {
+      pos.add(in_vision[i].mover.get_position())
+    }
 
-    this.m_01.add_force(steer)
-    return true
+    pos.div(in_vision.length)
+    return Seek.calculate(mover.get_position(), mover.get_velocity(), mover.get_max_speed(), pos)
   }
 
-  exit() { }
+}
 
-  static calculate(position, velocity, radius, angle, target) {
-    let new_position = p5.Vector.add(position, target)
-    new_position.div(2)
-    return Behaviours.steering_force(position, velocity, radius, angle, new_position)
+class Flock {
+
+  constructor(objects) {
+    this.objects = objects
+    this.persistent = true
   }
 
+  update() {
+    for (let i = 0; i < this.objects.length; i++) {
+      let a = Align.calculate(this.objects[i].mover, this.objects[i].get_vision(), this.objects)
+      let s = Separate.calculate(this.objects[i].mover, this.objects[i].get_vision(), this.objects)
+      let c = Cohesion.calculate(this.objects[i].mover, this.objects[i].get_vision(), this.objects)
+      s.mult(1.5)
+      a.mult(1)
+      c.mult(1.5)
+      s.add(a)
+      s.add(c)
+      this.objects[i].mover.add_force(s)
+    }
+
+    return !this.persistent
+  }
 }

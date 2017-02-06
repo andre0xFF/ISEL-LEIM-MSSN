@@ -35,9 +35,11 @@ class WBC {
 
   get_boid() { return this.boid }
   get_mover() { return this.mover }
+  get_vision() { return this.vision }
 
   constructor(position) {
-    this.mover = new Mover(position, createVector(random(-5, 5), random(-5, 5)))
+    this.mover = new Mover(position, createVector(0, 0))
+    this.mover.max_speed = 80
     this.boid = new Boid(this.mover, 60)
     this.boid.set_replication_rate(0)
     this.view = new WBC_view()
@@ -72,20 +74,10 @@ class WBC {
     }
   }
 
-  add_avoid(boids) {
-    for (let i = 0; i < boids.length; i++) {
-      this.boid.get_behaviours().add_passive(new Avoid(this.mover, 16 * 10, Math.PI / 2, boids[i].get_mover()))
-    }
-  }
-
-  add_wander() {
-    this.boid.get_behaviours().add_passive(new Wander(this.mover))
-  }
-
-  add_attack(boids) {
-    for (let i = 0; i < boids.length; i++) {
-      this.boid.get_behaviours().add_active(new Attack(this.boid, boids[i].get_boid()))
-    }
+  enable_behaviours(cho, virus, wbc) {
+    this.boid.add(new Wander(this.mover))
+    this.boid.add(new Avoid(this.mover, this.vision, cho))
+    this.boid.add(new Attack(this.boid, virus))
   }
 
 }
@@ -94,6 +86,7 @@ class CHO {
 
   get_mover() { return this.mover }
   get_boid() { return this.boid }
+  get_vision() { return this.vision }
 
   constructor(position) {
     this.mover = new Mover(position, createVector(0, 0))
@@ -107,13 +100,9 @@ class CHO {
     this.view.draw(this.mover.get_position())
   }
 
-  add_attack(boids) {
-    for (let i = 0; i < boids.length; i++) {
-      this.boid.get_behaviours().add_active(new Attack(this.boid, boids[i].get_boid()))
-    }
-    if (this.vision_view === null) {
-      this.vision_view = new Vision_view(16 * 10, Math.PI / 2)
-    }
+  enable_behaviours(wbc, virus) {
+    this.boid.add(new Attack(this.boid, virus))
+    this.boid.add(new Attack(this.boid, wbc))
   }
 
 }
@@ -122,6 +111,7 @@ class Virus {
 
   get_boid() { return this.boid }
   get_mover() { return this.mover }
+  get_vision() { return this.vision }
 
   constructor(position) {
     this.mover = new Mover(position, createVector(0, 0))
@@ -132,16 +122,10 @@ class Virus {
       angle: Math.PI / 2
     }
     this.vision_view = new Vision_view(this.vision.radius, this.vision.angle)
-
-
-    // this.mouse = new Boid(new Mover(createVector(mouseX, mouseY), createVector(0, 0)), 10000)
-    // this.boid.get_behaviours().add_passive(new Align(this.mover, this.vision.radius, this.vision.angle, this.mouse.get_mover()))
   }
 
   update() {
-    // this.mouse.get_mover().set_position(createVector(mouseX, mouseY))
-
-
+    // this.mouse.mover.position = createVector(mouseX, mouseY)
     this.mover.update()
     this.boid.update()
     this.boid.damage(1)
@@ -165,32 +149,13 @@ class Virus {
     }
   }
 
-  add_align(boids) {
-    for (let i = 0; i < boids.length; i++) {
-      this.boid.get_behaviours().add_passive(new Align(this.mover, this.vision.radius, this.vision.angle, boids[i].get_mover()))
-    }
-  }
-
-  add_avoid(boids) {
-    for (let i = 0; i < boids.length; i++) {
-      this.boid.get_behaviours().add_passive(new Avoid(this.mover, 16 * 10, Math.PI / 2, boids[i].get_mover()))
-    }
-  }
-
-  add_attack(boids) {
-    for (let i = 0; i < boids.length; i++) {
-      this.boid.get_behaviours().add_active(new Attack(this.boid, boids[i].get_boid()))
-    }
-  }
-
-  add_wander() {
-    this.boid.get_behaviours().add_passive(new Wander(this.mover))
-  }
-
-  add_evade(boids) {
-    for (let i = 0; i < boids.length; i++) {
-      this.boid.get_behaviours().add_active(new Evade(this.mover, boids[i].get_mover()))
-    }
+  enable_behaviours(cho, rbc, wbc) {
+    this.boid.add(new Wander(this.mover))
+    this.boid.add(new Avoid(this.mover, this.vision, cho))
+    this.boid.add(new Attack(this.boid, rbc))
+    this.boid.add(new Evade(this.mover, wbc))
+    // this.mouse = new Boid(new Mover(createVector(mouseX, mouseY), createVector(3, 3)), 1000)
+    // this.boid.set_priority(new Arrive(this.mover, 200, [this.mouse]))
   }
 
 }

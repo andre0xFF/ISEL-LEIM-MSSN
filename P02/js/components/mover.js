@@ -15,7 +15,7 @@ class Mover {
     this.coordinates = position.copy()
     this.override_coordinates = false
     this.mass = 1
-    this.max_speed = 16 * 2
+    this.max_speed = SPACING * 4
   }
 
   set_coordinates(coordinates) {

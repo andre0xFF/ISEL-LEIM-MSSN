@@ -30,47 +30,27 @@ class Environment {
     for (let i = 0; i < 150; i++) {
       this.rbc.push(new RBC(createVector(random(0, this.width), random(0, this.height))))
     }
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 40; i++) {
       this.cho.push(new CHO(createVector(random(0, this.width), random(0, this.height))))
     }
-    for (let i = 0; i < 6; i++) {
-      this.wbc.push(new WBC(createVector(this.width, random(0, this.height))))
+    for (let i = 0; i < 20; i++) {
+      this.wbc.push(new WBC(createVector(this.width, random(0, this.height / 3))))
     }
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 20; i++) {
       this.virus.push(new Virus(createVector(400 + 300 * Math.round(random(-1, 1)), 300)))
     }
     // Behaviours
     for (let i = 0; i < this.cho.length; i++) {
-      this.cho_behaviours(this.cho[i])
+      this.cho[i].enable_behaviours(this.wbc, this.virus)
     }
     for (let i = 0; i < this.wbc.length; i++) {
-      this.wbc_behaviours(this.wbc[i])
+      this.wbc[i].enable_behaviours(this.cho, this.virus, this.wbc)
     }
     for (let i = 0; i < this.virus.length; i++) {
-      this.virus_behaviours(this.virus[i])
+      this.virus[i].enable_behaviours(this.cho, this.rbc, this.wbc, this.virus)
     }
-  }
 
-  cho_behaviours(cho) {
-    cho.add_attack(this.virus)
-    cho.add_attack(this.wbc)
-    return cho
-  }
-
-  wbc_behaviours(wbc) {
-    wbc.add_wander()
-    wbc.add_avoid(this.cho)
-    wbc.add_attack(this.virus)
-    return wbc
-  }
-
-  virus_behaviours(virus) {
-    virus.add_wander()
-    virus.add_avoid(this.cho)
-    virus.add_attack(this.rbc)
-    virus.add_evade(this.wbc)
-    virus.add_align(this.virus)
-    return virus
+    this.flock = new Flock(this.wbc)
   }
 
   update() {
@@ -111,7 +91,8 @@ class Environment {
 
       let replica = this.wbc[i].get_replica()
       if (replica !== undefined) {
-        this.wbc.push(this.wbc_behaviours(replica))
+        replica.enable_behaviours(this.cho, this.virus, this.wbc)
+        this.wbc.push(replica)
       }
 
       this.wbc[i].update()
@@ -121,7 +102,7 @@ class Environment {
 
     if (this.virus.length / this.wbc.length > 10) {
       let w = new WBC(createVector(this.width, random(0, this.height)))
-      w = this.wbc_behaviours(w)
+      w.enable_behaviours(this.cho, this.virus, this.wbc)
       this.wbc.push(w)
       this.wbc.push(w)
       this.wbc.push(w)
@@ -135,7 +116,8 @@ class Environment {
 
       let replica = this.virus[i].get_replica()
       if (replica !== undefined) {
-        this.virus.push(this.virus_behaviours(replica))
+        replica.enable_behaviours(this.cho, this.rbc, this.wbc)
+        this.virus.push(replica)
       }
 
       this.virus[i].update()
