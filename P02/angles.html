@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.6/p5.min.js" async></script>
+    <script type="text/javascript">
+      function setup() {
+        createCanvas(600, 600)
+        let pos = createVector(200, 200)
+        let dir = createVector(1, 1)
+        let target = createVector(400, 400)
+        let radius = 100
+        let angle = Math.PI / 4
+
+        rectMode(CENTER)
+
+        rect(pos.x, pos.y, 3, 3)
+        text('A', pos.x + 8, pos.y)
+        line(pos.x, pos.y, pos.x + dir.x * 15, pos.y + dir.y * 15)
+
+        rect(target.x, target.y, 3, 3)
+        text('B', target.x + 8, target.y)
+
+        this.no_rotation(pos, dir, radius, angle)
+      }
+
+      function no_rotation(pos, dir, radius, angle) {
+        angleMode(RADIANS)
+        translate(pos.x, pos.y)
+
+        let theta_00 = dir.heading()
+        let theta_01 = theta_00 - angle / 2
+        let theta_02 = theta_00 + angle / 2
+        ellipse(Math.cos(theta_00) * radius, Math.sin(theta_00) * radius, 3, 3)
+        ellipse(Math.cos(theta_01) * radius, Math.sin(theta_01) * radius, 3, 3)
+        ellipse(Math.cos(theta_02) * radius, Math.sin(theta_02) * radius, 3, 3)
+
+        ellipse(Math.cos(0) * radius, Math.sin(0) * radius, 3, 3)
+        // ellipse(Math.cos(theta_00 * 2) * radius, Math.sin(theta_00 * 2) * radius, 3, 3)
+      }
+
+      function with_rotation(pos, dir, radius, angle) {
+        push()
+        angleMode(RADIANS)
+        translate(pos.x, pos.y)
+        rotate(dir.heading())
+
+        let theta_00 = 0
+        let theta_01 = theta_00 - angle / 2
+        let theta_02 = theta_00 + angle / 2
+        ellipse(Math.cos(theta_00) * radius, Math.sin(theta_00) * radius, 3, 3)
+        ellipse(Math.cos(theta_01) * radius, Math.sin(theta_01) * radius, 3, 3)
+        ellipse(Math.cos(theta_02) * radius, Math.sin(theta_02) * radius, 3, 3)
+
+        ellipse(Math.cos(-Math.PI / 4) * radius, Math.sin(-Math.PI / 4) * radius, 3, 3)
+        ellipse(Math.cos(+Math.PI / 4) * radius, Math.sin(+Math.PI / 4) * radius, 3, 3)
+        pop()
+
+      }
+    </script>
+    <title></title>
+  </head>
+  <body>
+
+  </body>
+</html>
