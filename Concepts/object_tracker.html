@@ -339,19 +339,6 @@
 
         background('#FFFFFF')
         grid.draw(true)
-        draw_cursor()
-      }
-
-      function draw_cursor() {
-
-        if (mouseX > grid.get_width() || mouseY > grid.get_height() || mouseX <= 0 || mouseY <= 0) { return }
-
-        let tracker = new Tracker(createVector(mouseX, mouseY), grid)
-
-        push()
-        translate(grid.get_width(), grid.get_spacing() / 2)
-        text(`${tracker.to_string()}\nCell quantity: ${grid.get_cell_quantity()}`, 0, 0)
-        pop()
       }
 
       function generate_mover(position, velocity) {
